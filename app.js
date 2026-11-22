@@ -160,6 +160,11 @@ createApp({
       sidebarOpen: false,
       isLoading: false,
 
+      // Histórico de Navegação (Voltar / Avançar)
+      navHistory: [],
+      navIndex: -1,
+      isNavigatingHistory: false,
+
       // Estado de Usuário e Autenticação
       user: null,
       authMode: 'login',
@@ -225,6 +230,9 @@ createApp({
       this.$refs.audioRef.volume = this.volume;
     }
 
+    // Registra a tela inicial no histórico
+    this.recordHistory({ view: 'home' });
+
     // 1. Carrega o catálogo de músicas (musicas.json)
     await this.loadServerCatalog();
 
@@ -244,6 +252,14 @@ createApp({
   },
 
   computed: {
+    canGoBack() {
+      return this.navIndex > 0;
+    },
+
+    canGoForward() {
+      return this.navIndex < this.navHistory.length - 1;
+    },
+
     popularArtists() {
       const map = new Map();
       (this.catalogTracks || []).forEach(track => {
@@ -257,7 +273,9 @@ createApp({
           });
         }
       });
-      return Array.from(map.values());
+      return Array.from(map.values()).sort((a, b) =>
+        a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' })
+      );
     },
 
     catalogAlbums() {
@@ -326,9 +344,98 @@ createApp({
   },
 
   methods: {
+    // --- HISTÓRICO DE NAVEGAÇÃO (VOLTAR E AVANÇAR) ---
+    recordHistory(entry) {
+      if (this.isNavigatingHistory) return;
+
+      const current = this.navHistory[this.navIndex];
+      if (
+        current &&
+        current.view === entry.view &&
+        (current.artistName || '') === (entry.artistName || '') &&
+        (current.albumKey || '') === (entry.albumKey || '') &&
+        (current.playlistId || '') === (entry.playlistId || '')
+      ) {
+        if (entry.view === 'search') {
+          current.searchQuery = entry.searchQuery || '';
+        }
+        return;
+      }
+
+      if (this.navIndex < this.navHistory.length - 1) {
+        this.navHistory = this.navHistory.slice(0, this.navIndex + 1);
+      }
+
+      this.navHistory.push({
+        view: entry.view,
+        artistName: entry.artistName || null,
+        albumKey: entry.albumKey || null,
+        albumSnapshot: entry.albumSnapshot || null,
+        playlistId: entry.playlistId || null,
+        searchQuery: entry.searchQuery || ''
+      });
+      this.navIndex = this.navHistory.length - 1;
+    },
+
+    goBack() {
+      if (!this.canGoBack) return;
+      this.navIndex -= 1;
+      this.restoreHistoryEntry(this.navHistory[this.navIndex]);
+    },
+
+    goForward() {
+      if (!this.canGoForward) return;
+      this.navIndex += 1;
+      this.restoreHistoryEntry(this.navHistory[this.navIndex]);
+    },
+
+    restoreHistoryEntry(entry) {
+      if (!entry) return;
+      this.isNavigatingHistory = true;
+      try {
+        if (entry.view === 'artist' && entry.artistName) {
+          this.openArtistPage(entry.artistName);
+        } else if (entry.view === 'album') {
+          const foundAlbum = this.catalogAlbums.find(
+            a => (a.artist.toLowerCase() + '::' + a.name.toLowerCase()) === entry.albumKey
+          );
+          if (foundAlbum) {
+            this.openAlbumPage(foundAlbum);
+          } else if (entry.albumSnapshot) {
+            this.openAlbumPage(entry.albumSnapshot);
+          } else {
+            this.currentView = 'search';
+          }
+        } else if (entry.view === 'playlist' && entry.playlistId) {
+          const pl = this.playlists.find(p => p.id === entry.playlistId);
+          if (pl) {
+            this.openPlaylist(pl);
+          } else {
+            this.currentView = 'library';
+          }
+        } else if (entry.view === 'search') {
+          this.searchQuery = entry.searchQuery || '';
+          this.searchCatalog();
+          this.currentView = 'search';
+        } else {
+          this.currentView = entry.view || 'home';
+        }
+        this.sidebarOpen = false;
+      } finally {
+        this.isNavigatingHistory = false;
+      }
+    },
+
     navigate(view) {
       this.currentView = view;
       this.sidebarOpen = false;
+      if (view === 'search') {
+        this.searchCatalog();
+      }
+      this.recordHistory({
+        view: view,
+        searchQuery: view === 'search' ? this.searchQuery : ''
+      });
     },
 
     // --- CARREGAMENTO DO CATÁLOGO JSON ---
@@ -354,6 +461,11 @@ createApp({
 
     searchCatalog() {
       const q = (this.searchQuery || '').trim().toLowerCase();
+
+      if (this.currentView === 'search' && this.navHistory[this.navIndex] && this.navHistory[this.navIndex].view === 'search') {
+        this.navHistory[this.navIndex].searchQuery = this.searchQuery || '';
+      }
+
       if (!q) {
         this.searchResults = this.catalogTracks.slice();
         return;
@@ -382,12 +494,22 @@ createApp({
 
       this.currentView = 'artist';
       this.sidebarOpen = false;
+      this.recordHistory({
+        view: 'artist',
+        artistName: artistName
+      });
     },
 
     openAlbumPage(album) {
       this.albumData = album;
       this.currentView = 'album';
       this.sidebarOpen = false;
+      const albumKey = (album.artist || '').toLowerCase() + '::' + (album.name || '').toLowerCase();
+      this.recordHistory({
+        view: 'album',
+        albumKey: albumKey,
+        albumSnapshot: album
+      });
     },
 
     openAlbumByName(albumName, artistName) {
@@ -404,6 +526,10 @@ createApp({
       this.activePlaylistId = p.id;
       this.currentView = 'playlist';
       this.sidebarOpen = false;
+      this.recordHistory({
+        view: 'playlist',
+        playlistId: p.id
+      });
     },
 
     // --- GERENCIAMENTO DA FILA DE EXECUÇÃO ---
@@ -891,7 +1017,7 @@ createApp({
 
     async deletePlaylist(playlistId) {
       this.playlists = this.playlists.filter(p => p.id !== playlistId);
-      this.currentView = 'library';
+      this.navigate('library');
       const saved = await this.syncUserDataToCloud();
       if (saved) {
         this.showToast('Playlist excluída.');
@@ -1112,7 +1238,11 @@ createApp({
 
       if (error) {
         console.error('Erro ao carregar perfil do Supabase:', error);
-        this.showToast('Erro ao carregar seus dados: ' + error.message, 'error');
+        if (error.message && error.message.toLowerCase().indexOf('permission denied') !== -1) {
+          this.showToast('Permissão negada na tabela profiles. Rode o SQL de permissões (GRANT e RLS) no Supabase.', 'error');
+        } else {
+          this.showToast('Erro ao carregar seus dados: ' + error.message, 'error');
+        }
       }
 
       const metaName = authUser.user_metadata && authUser.user_metadata.display_name;
@@ -1179,6 +1309,16 @@ createApp({
       if (!this.user) return false;
 
       if (supabaseClient) {
+        // Garante que existe uma sessão autenticada ativa antes de gravar no banco
+        const { data: sessionData } = await supabaseClient.auth.getSession();
+        const activeSession = sessionData && sessionData.session;
+        if (!activeSession || !activeSession.user) {
+          this.showToast('Sua sessão expirou. Faça login novamente para salvar.', 'error');
+          this.user = null;
+          this.openAuthModal('Sua sessão expirou. Entre novamente para salvar seus favoritos!');
+          return false;
+        }
+
         const serializedPlaylists = this.serializePlaylists();
         const likedIds = this.likedTracks.map(t => String(t.id));
 
@@ -1197,7 +1337,7 @@ createApp({
           .from('profiles')
           .upsert(
             {
-              id: this.user.id,
+              id: activeSession.user.id,
               display_name: this.user.displayName,
               avatar_url: this.user.avatarUrl || '',
               bio: this.user.bio || '',
@@ -1211,7 +1351,11 @@ createApp({
 
         if (error) {
           console.error('Erro ao salvar dados do usuário no Supabase:', error);
-          this.showToast('Erro ao salvar no servidor: ' + error.message, 'error');
+          if (error.message && error.message.toLowerCase().indexOf('permission denied') !== -1) {
+            this.showToast('Permissão negada na tabela profiles. Rode o SQL de permissões (GRANT e RLS) no SQL Editor do Supabase.', 'error');
+          } else {
+            this.showToast('Erro ao salvar no servidor: ' + error.message, 'error');
+          }
           return false;
         }
         return true;
@@ -1316,6 +1460,7 @@ createApp({
       this.playlists = [
         { id: 'pl-1', name: 'Favoritas do Nilo', description: 'Seleção suave para relaxar', tracks: [] }
       ];
+      this.closeModal();
       this.showToast('Sua sessão foi encerrada.');
     },
 
