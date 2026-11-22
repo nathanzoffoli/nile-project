@@ -279,11 +279,12 @@
                 </button>
 
                 <button 
-                  v-if="popularArtists.length > 0"
-                  @click="openArtistPage(popularArtists[0].name)" 
-                  class="bg-nile-blue/15 hover:bg-nile-blue/25 text-nile-blue px-4 sm:px-5 py-2.5 sm:py-3 rounded-full font-bold text-xs sm:text-sm border border-nile-blue/30 transition"
+                  v-if="catalogTracks.length > 0"
+                  @click="playRandomTrack" 
+                  class="bg-nile-blue/15 hover:bg-nile-blue/25 text-nile-blue px-4 sm:px-5 py-2.5 sm:py-3 rounded-full font-bold text-xs sm:text-sm border border-nile-blue/30 flex items-center space-x-2 transition active:scale-95"
                 >
-                  Explorar Artista
+                  <i class="fa-solid fa-shuffle text-xs"></i>
+                  <span>Explorar</span>
                 </button>
               </div>
             </div>
@@ -312,6 +313,15 @@
                     <p class="text-xs text-nile-blue/90 truncate hover:underline" @click.stop="openArtistPage(track.artist)">{{ track.artist }}</p>
                     <p class="text-[11px] text-slate-500 truncate">{{ track.album }}</p>
                   </div>
+
+                  <!-- Botão de Adicionar à Fila de Execução -->
+                  <button 
+                    @click.stop="addToQueue(track)"
+                    class="p-2 text-slate-400 hover:text-nile-blue transition shrink-0"
+                    title="Adicionar à fila de execução"
+                  >
+                    <i class="fa-solid fa-list-ul"></i>
+                  </button>
 
                   <!-- Botão de Curtir (Permanece visível antes e depois do login) -->
                   <button 
@@ -449,7 +459,7 @@
                     <div class="relative aspect-square rounded-xl overflow-hidden mb-3 bg-nile-hover shadow-lg">
                       <img :src="album.cover" :alt="album.name" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
                       <button 
-                        @click.stop="playTrackList(album.tracks)"
+                        @click.stop="playAlbum(album.tracks)"
                         class="absolute bottom-2 right-2 w-9 h-9 rounded-full bg-nile-yellow text-nile-darkBg flex items-center justify-center shadow-lg opacity-95 sm:opacity-0 sm:group-hover:opacity-100 transition active:scale-95"
                         title="Tocar Álbum"
                       >
@@ -507,6 +517,14 @@
 
                       <div class="flex items-center space-x-1 sm:space-x-2 shrink-0">
                         <button 
+                          @click.stop="addToQueue(track)"
+                          class="text-slate-400 hover:text-nile-blue p-2 transition text-sm"
+                          title="Adicionar à fila de execução"
+                        >
+                          <i class="fa-solid fa-list-ul"></i>
+                        </button>
+
+                        <button 
                           @click.stop="toggleLikeTrack(track)"
                           class="text-slate-400 hover:text-nile-yellow p-2 transition text-sm"
                           :title="isTrackLiked(track.id) ? 'Descurtir' : 'Salvar como favorita'"
@@ -547,7 +565,7 @@
 
                   <div class="pt-2 flex flex-wrap justify-center sm:justify-start gap-3">
                     <button 
-                      @click="playTrackList(albumData.tracks)" 
+                      @click="playAlbum(albumData.tracks)" 
                       class="bg-nile-yellow hover:bg-nile-yellowHover text-nile-darkBg px-6 py-2.5 rounded-full font-bold text-xs uppercase tracking-wider flex items-center space-x-2 shadow-lg shadow-nile-yellow/20 transition active:scale-95"
                     >
                       <i class="fa-solid fa-play"></i>
@@ -568,13 +586,16 @@
             <div class="bg-nile-card rounded-2xl border border-nile-border overflow-hidden">
               <div class="divide-y divide-nile-border/40">
                 <div 
-                  v-for="(track, idx) in albumData.tracks" 
+                  v-for="(track, idx) in sortTracksById(albumData.tracks)" 
                   :key="'alb-tr-' + track.id"
-                  @click="playTrack(track)"
+                  @click="playTrack(track, albumData.tracks)"
                   class="flex items-center justify-between p-3 sm:p-3.5 hover:bg-nile-hover transition group cursor-pointer gap-2"
                 >
                   <div class="flex items-center space-x-3 sm:space-x-4 min-w-0 flex-1">
-                    <span class="w-5 text-center text-xs text-slate-500 font-bold group-hover:text-white shrink-0">{{ idx + 1 }}</span>
+                    <span class="w-5 text-center text-xs text-slate-500 font-bold group-hover:text-white shrink-0">
+                      <i v-if="currentTrack && currentTrack.id === track.id && isPlaying" class="fa-solid fa-volume-high text-nile-yellow"></i>
+                      <span v-else>{{ idx + 1 }}</span>
+                    </span>
                     <div class="min-w-0 flex-1">
                       <p class="font-bold text-xs sm:text-sm text-white truncate group-hover:text-nile-yellow transition" :class="currentTrack && currentTrack.id === track.id ? 'text-nile-yellow' : ''">{{ track.title }}</p>
                       <p class="text-[11px] sm:text-xs text-slate-400 truncate">{{ track.artist }}</p>
@@ -582,10 +603,13 @@
                   </div>
 
                   <div class="flex items-center space-x-1 sm:space-x-2 shrink-0">
-                    <button @click.stop="toggleLikeTrack(track)" class="text-slate-400 hover:text-nile-yellow p-2 text-sm">
+                    <button @click.stop="addToQueue(track)" class="text-slate-400 hover:text-nile-blue p-2 text-sm" title="Adicionar à fila de execução">
+                      <i class="fa-solid fa-list-ul"></i>
+                    </button>
+                    <button @click.stop="toggleLikeTrack(track)" class="text-slate-400 hover:text-nile-yellow p-2 text-sm" title="Salvar como favorita">
                       <i :class="isTrackLiked(track.id) ? 'fa-solid fa-heart text-nile-yellow' : 'fa-regular fa-heart'"></i>
                     </button>
-                    <button @click.stop="openAddToPlaylistModal(track)" class="text-slate-400 hover:text-nile-blue p-2 text-sm">
+                    <button @click.stop="openAddToPlaylistModal(track)" class="text-slate-400 hover:text-nile-blue p-2 text-sm" title="Adicionar à Playlist">
                       <i class="fa-solid fa-plus"></i>
                     </button>
                   </div>
@@ -610,7 +634,8 @@
                   
                   <div class="flex flex-wrap items-center justify-center sm:justify-start gap-3 text-xs text-slate-300">
                     <span class="bg-nile-darkBg px-3 py-1 rounded-full border border-nile-border text-nile-yellow">{{ artistData.genre || 'Música' }}</span>
-                    <span>• {{ artistData.tracks.length }} Faixas no Servidor</span>
+                    <span>• {{ artistAlbums.length }} {{ artistAlbums.length === 1 ? 'Álbum' : 'Álbuns' }}</span>
+                    <span>• {{ artistData.tracks.length }} Faixas</span>
                   </div>
 
                   <div class="pt-2 flex flex-wrap justify-center sm:justify-start gap-2.5 sm:gap-3">
@@ -635,31 +660,66 @@
               </div>
             </div>
 
-            <div>
-              <h3 class="text-xl sm:text-2xl font-black mb-4">Músicas do Artista</h3>
+            <div class="space-y-5">
+              <div class="flex items-center justify-between">
+                <h3 class="text-xl sm:text-2xl font-black">Discografia por Álbuns</h3>
+                <span class="text-xs text-slate-400">{{ artistAlbums.length }} {{ artistAlbums.length === 1 ? 'álbum' : 'álbuns' }}</span>
+              </div>
 
-              <div class="bg-nile-card rounded-2xl border border-nile-border overflow-hidden">
+              <div 
+                v-for="album in artistAlbums" 
+                :key="'art-alb-' + album.name"
+                class="bg-nile-card rounded-2xl border border-nile-border overflow-hidden"
+              >
+                <!-- Cabeçalho do Álbum do Artista -->
+                <div class="p-4 sm:p-5 bg-nile-surface/70 border-b border-nile-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div class="flex items-center space-x-4 min-w-0 cursor-pointer group" @click="openAlbumPage(album)">
+                    <img :src="album.cover" :alt="album.name" class="w-16 h-16 sm:w-20 sm:h-20 rounded-xl object-cover shadow-lg border border-nile-border group-hover:border-nile-yellow transition shrink-0" />
+                    <div class="min-w-0">
+                      <span class="text-[10px] font-bold uppercase tracking-widest text-nile-blue block">
+                        {{ album.name.toLowerCase() === 'single' ? 'SINGLE' : 'ÁLBUM' }}
+                      </span>
+                      <h4 class="text-base sm:text-xl font-black text-white truncate group-hover:text-nile-yellow transition">{{ album.name }}</h4>
+                      <p class="text-xs text-slate-400 mt-0.5">{{ album.tracks.length }} {{ album.tracks.length === 1 ? 'faixa' : 'faixas' }}</p>
+                    </div>
+                  </div>
+
+                  <button 
+                    @click="playAlbum(album.tracks)"
+                    class="self-start sm:self-center bg-nile-yellow hover:bg-nile-yellowHover text-nile-darkBg px-4 py-2 rounded-full font-bold text-xs uppercase tracking-wider flex items-center space-x-2 shadow-md transition active:scale-95 shrink-0"
+                  >
+                    <i class="fa-solid fa-play text-[11px]"></i>
+                    <span>Tocar Álbum</span>
+                  </button>
+                </div>
+
+                <!-- Lista de Faixas deste Álbum -->
                 <div class="divide-y divide-nile-border/40">
                   <div 
-                    v-for="(track, idx) in artistData.tracks" 
+                    v-for="(track, idx) in sortTracksById(album.tracks)" 
                     :key="'art-tr-' + track.id"
-                    @click="playTrack(track)"
+                    @click="playTrack(track, album.tracks)"
                     class="flex items-center justify-between p-3 sm:p-3.5 hover:bg-nile-hover transition group cursor-pointer gap-2"
                   >
                     <div class="flex items-center space-x-3 sm:space-x-4 min-w-0 flex-1">
-                      <span class="w-5 text-center text-xs text-slate-500 font-bold group-hover:text-white shrink-0">{{ idx + 1 }}</span>
-                      <img :src="track.cover" class="w-11 h-11 rounded-lg object-cover shadow shrink-0" />
+                      <span class="w-5 text-center text-xs text-slate-500 font-bold group-hover:text-white shrink-0">
+                        <i v-if="currentTrack && currentTrack.id === track.id && isPlaying" class="fa-solid fa-volume-high text-nile-yellow"></i>
+                        <span v-else>{{ idx + 1 }}</span>
+                      </span>
                       <div class="min-w-0 flex-1">
-                        <p class="font-bold text-xs sm:text-sm text-white truncate group-hover:text-nile-yellow transition">{{ track.title }}</p>
-                        <p class="text-[11px] sm:text-xs text-slate-400 truncate hover:underline" @click.stop="openAlbumByName(track.album, track.artist)">{{ track.album }}</p>
+                        <p class="font-bold text-xs sm:text-sm text-white truncate group-hover:text-nile-yellow transition" :class="currentTrack && currentTrack.id === track.id ? 'text-nile-yellow' : ''">{{ track.title }}</p>
+                        <p class="text-[11px] sm:text-xs text-slate-400 truncate">{{ track.artist }}</p>
                       </div>
                     </div>
 
                     <div class="flex items-center space-x-1 sm:space-x-2 shrink-0">
-                      <button @click.stop="toggleLikeTrack(track)" class="text-slate-400 hover:text-nile-yellow p-2 text-sm">
+                      <button @click.stop="addToQueue(track)" class="text-slate-400 hover:text-nile-blue p-2 text-sm" title="Adicionar à fila de execução">
+                        <i class="fa-solid fa-list-ul"></i>
+                      </button>
+                      <button @click.stop="toggleLikeTrack(track)" class="text-slate-400 hover:text-nile-yellow p-2 text-sm" title="Salvar como favorita">
                         <i :class="isTrackLiked(track.id) ? 'fa-solid fa-heart text-nile-yellow' : 'fa-regular fa-heart'"></i>
                       </button>
-                      <button @click.stop="openAddToPlaylistModal(track)" class="text-slate-400 hover:text-nile-blue p-2 text-sm">
+                      <button @click.stop="openAddToPlaylistModal(track)" class="text-slate-400 hover:text-nile-blue p-2 text-sm" title="Adicionar à Playlist">
                         <i class="fa-solid fa-plus"></i>
                       </button>
                     </div>
@@ -763,9 +823,14 @@
                     </div>
                   </div>
 
-                  <button @click.stop="toggleLikeTrack(track)" class="text-nile-yellow hover:text-slate-400 p-2 text-sm shrink-0">
-                    <i class="fa-solid fa-heart"></i>
-                  </button>
+                  <div class="flex items-center space-x-1 shrink-0">
+                    <button @click.stop="addToQueue(track)" class="text-slate-400 hover:text-nile-blue p-2 text-sm" title="Adicionar à fila de execução">
+                      <i class="fa-solid fa-list-ul"></i>
+                    </button>
+                    <button @click.stop="toggleLikeTrack(track)" class="text-nile-yellow hover:text-slate-400 p-2 text-sm" title="Remover dos favoritos">
+                      <i class="fa-solid fa-heart"></i>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -851,13 +916,22 @@
                     </div>
                   </div>
 
-                  <button 
-                    @click.stop="removeFromPlaylist(activePlaylist.id, track.id)" 
-                    class="text-slate-500 hover:text-rose-400 p-2 text-xs shrink-0"
-                    title="Remover da Playlist"
-                  >
-                    <i class="fa-solid fa-trash"></i>
-                  </button>
+                  <div class="flex items-center space-x-1 shrink-0">
+                    <button 
+                      @click.stop="addToQueue(track)" 
+                      class="text-slate-400 hover:text-nile-blue p-2 text-sm"
+                      title="Adicionar à fila de execução"
+                    >
+                      <i class="fa-solid fa-list-ul"></i>
+                    </button>
+                    <button 
+                      @click.stop="removeFromPlaylist(activePlaylist.id, track.id)" 
+                      class="text-slate-500 hover:text-rose-400 p-2 text-xs"
+                      title="Remover da Playlist"
+                    >
+                      <i class="fa-solid fa-trash"></i>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -898,8 +972,8 @@
               </template>
             </div>
 
-            <!-- Coração de Like no Player + Controles Mobile -->
-            <div class="flex items-center space-x-1.5 shrink-0">
+            <!-- Coração de Like no Player + Controles Mobile + Botão Fila Mobile -->
+            <div class="flex items-center space-x-1 shrink-0">
               <button 
                 v-if="currentTrack" 
                 @click="toggleLikeTrack(currentTrack)" 
@@ -907,6 +981,18 @@
                 title="Salvar como favorita"
               >
                 <i :class="isTrackLiked(currentTrack.id) ? 'fa-solid fa-heart text-nile-yellow' : 'fa-regular fa-heart'"></i>
+              </button>
+
+              <button 
+                @click="queueDrawerOpen = !queueDrawerOpen"
+                :class="queueDrawerOpen ? 'text-nile-yellow' : 'text-slate-300 hover:text-white'"
+                class="md:hidden relative p-2 text-sm transition"
+                title="Fila de execução"
+              >
+                <i class="fa-solid fa-list-ol"></i>
+                <span v-if="playQueue.length > 0" class="absolute -top-0.5 -right-0.5 bg-nile-blue text-nile-darkBg text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center">
+                  {{ playQueue.length }}
+                </span>
               </button>
 
               <div class="flex md:hidden items-center space-x-1">
@@ -929,7 +1015,7 @@
           <!-- Centro: Controles de Reprodução Desktop & Barra de Progresso -->
           <div class="flex flex-col items-center justify-center w-full md:flex-1 md:max-w-2xl space-y-1 md:space-y-1.5">
             <div class="hidden md:flex items-center space-x-5">
-              <button @click="isShuffle = !isShuffle" :class="isShuffle ? 'text-nile-blue' : 'text-slate-400 hover:text-white'" class="text-xs p-1">
+              <button @click="toggleShuffle" :class="isShuffle ? 'text-nile-blue' : 'text-slate-400 hover:text-white'" class="text-xs p-1" title="Aleatorizar fila de execução">
                 <i class="fa-solid fa-shuffle"></i>
               </button>
 
@@ -967,8 +1053,21 @@
             </div>
           </div>
 
-          <!-- Direita: Controle de Volume (Desktop) -->
-          <div class="hidden md:flex items-center justify-end space-x-3 w-[30%] min-w-[140px]">
+          <!-- Direita: Fila de Execução + Controle de Volume (Desktop) -->
+          <div class="hidden md:flex items-center justify-end space-x-3 w-[30%] min-w-[180px]">
+            <button 
+              @click="queueDrawerOpen = !queueDrawerOpen"
+              :class="queueDrawerOpen ? 'bg-nile-yellow/15 text-nile-yellow border-nile-yellow/40' : 'bg-nile-card text-slate-300 hover:text-white border-nile-border'"
+              class="flex items-center space-x-1.5 px-3 py-1.5 rounded-full border text-xs font-semibold transition"
+              title="Abrir Fila de Execução"
+            >
+              <i class="fa-solid fa-list-ol"></i>
+              <span>Fila</span>
+              <span v-if="playQueue.length > 0" class="bg-nile-blue text-nile-darkBg text-[10px] font-black px-1.5 py-0.2 rounded-full">
+                {{ playQueue.length }}
+              </span>
+            </button>
+
             <button @click="toggleMute" class="text-slate-400 hover:text-white text-sm">
               <i v-if="isMuted || volume === 0" class="fa-solid fa-volume-xmark text-rose-400"></i>
               <i v-else class="fa-solid fa-volume-high text-nile-blue"></i>
@@ -989,6 +1088,106 @@
       </main>
 
     </div>
+
+    <!-- PAINEL LATERAL DA FILA DE EXECUÇÃO -->
+    <div 
+      v-if="queueDrawerOpen" 
+      @click="queueDrawerOpen = false"
+      class="fixed inset-0 bg-black/60 backdrop-blur-xs z-40 transition-opacity"
+    ></div>
+    <aside 
+      v-if="queueDrawerOpen"
+      class="fixed top-0 right-0 bottom-[104px] md:bottom-24 w-full max-w-sm bg-nile-surface border-l border-nile-border z-50 flex flex-col shadow-2xl animate-fadeIn"
+    >
+      <div class="p-4 sm:p-5 border-b border-nile-border flex items-center justify-between">
+        <div class="flex items-center space-x-2.5">
+          <i class="fa-solid fa-list-ol text-nile-yellow"></i>
+          <div>
+            <h3 class="font-black text-base text-white">Fila de Execução</h3>
+            <p class="text-[11px] text-slate-400">{{ playQueue.length }} {{ playQueue.length === 1 ? 'música na fila' : 'músicas na fila' }}</p>
+          </div>
+        </div>
+        <div class="flex items-center space-x-2">
+          <button 
+            @click="toggleShuffle"
+            :class="isShuffle ? 'bg-nile-blue/20 text-nile-blue border-nile-blue/40' : 'bg-nile-card text-slate-400 hover:text-white border-nile-border'"
+            class="text-[11px] font-semibold px-2.5 py-1 rounded-lg border transition flex items-center space-x-1"
+            title="Aleatorizar fila de execução"
+          >
+            <i class="fa-solid fa-shuffle"></i>
+            <span>Aleatório</span>
+          </button>
+          <button 
+            v-if="playQueue.length > 1"
+            @click="clearQueue"
+            class="text-[11px] font-semibold text-slate-400 hover:text-rose-400 px-2.5 py-1 rounded-lg bg-nile-card border border-nile-border transition"
+          >
+            Limpar
+          </button>
+          <button @click="queueDrawerOpen = false" class="text-slate-400 hover:text-white p-1.5 text-lg">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="flex-1 overflow-y-auto p-4 space-y-4">
+        <!-- Tocando Agora -->
+        <div v-if="currentTrack" class="space-y-2">
+          <span class="text-[10px] font-bold uppercase tracking-widest text-nile-yellow">Tocando agora</span>
+          <div class="flex items-center space-x-3 p-3 rounded-2xl bg-nile-card border border-nile-yellow/30">
+            <img :src="currentTrack.cover" :alt="currentTrack.title" class="w-12 h-12 rounded-xl object-cover shrink-0" />
+            <div class="min-w-0 flex-1">
+              <p class="font-bold text-xs text-nile-yellow truncate">{{ currentTrack.title }}</p>
+              <p class="text-[11px] text-nile-blue truncate">{{ currentTrack.artist }}</p>
+              <p class="text-[10px] text-slate-500 truncate">{{ currentTrack.album }}</p>
+            </div>
+            <i v-if="isPlaying" class="fa-solid fa-volume-high text-nile-yellow text-xs shrink-0"></i>
+          </div>
+        </div>
+
+        <!-- Lista da Fila -->
+        <div class="space-y-2">
+          <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Ordem da fila</span>
+
+          <div v-if="playQueue.length === 0" class="p-8 text-center bg-nile-card rounded-2xl border border-nile-border text-xs text-slate-500">
+            A fila de execução está vazia. Clique em <i class="fa-solid fa-list-ul mx-1 text-nile-blue"></i> ao lado de qualquer música para adicioná-la.
+          </div>
+
+          <div v-else class="space-y-1.5">
+            <div 
+              v-for="(qTrack, qIdx) in playQueue"
+              :key="'queue-item-' + qIdx + '-' + qTrack.id"
+              @click="playFromQueue(qTrack)"
+              :class="currentTrack && currentTrack.id === qTrack.id ? 'bg-nile-hover border-nile-yellow/30' : 'bg-nile-card hover:bg-nile-hover border-nile-border/60'"
+              class="flex items-center justify-between p-2.5 rounded-xl border cursor-pointer transition group gap-2"
+            >
+              <div class="flex items-center space-x-2.5 min-w-0 flex-1">
+                <span class="w-5 text-center text-[11px] font-bold text-slate-500 shrink-0">
+                  <i v-if="currentTrack && currentTrack.id === qTrack.id && isPlaying" class="fa-solid fa-volume-high text-nile-yellow"></i>
+                  <span v-else>{{ qIdx + 1 }}</span>
+                </span>
+                <img :src="qTrack.cover" :alt="qTrack.title" class="w-9 h-9 rounded-lg object-cover shrink-0" />
+                <div class="min-w-0 flex-1">
+                  <p class="font-bold text-xs truncate" :class="currentTrack && currentTrack.id === qTrack.id ? 'text-nile-yellow' : 'text-white'">
+                    {{ qTrack.title }}
+                  </p>
+                  <p class="text-[10px] text-slate-400 truncate">{{ qTrack.artist }}</p>
+                </div>
+              </div>
+
+              <button 
+                v-if="!currentTrack || currentTrack.id !== qTrack.id"
+                @click.stop="removeFromQueue(qIdx)"
+                class="text-slate-500 hover:text-rose-400 p-1.5 text-xs shrink-0"
+                title="Remover da fila"
+              >
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
 
     <!-- MOTOR DE ÁUDIO HTML5 -->
     <audio 
@@ -1133,7 +1332,7 @@
           <div class="flex gap-2.5 pt-1">
             <button 
               type="button" 
-              @click="logoutUser(); closeModal();"
+              @click="logoutUser"
               class="px-4 py-3 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 font-bold text-xs transition"
             >
               Sair da Conta
