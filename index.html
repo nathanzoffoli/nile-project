@@ -2,7 +2,7 @@
 <html lang="pt-BR" class="dark h-full">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Nile - Streamer de Música</title>
 
   <!-- Tailwind CSS CDN -->
@@ -48,20 +48,27 @@
   <!-- Supabase JS CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-nile-darkBg text-slate-100 font-sans h-full overflow-hidden antialiased select-none">
+<body class="bg-nile-darkBg text-slate-100 font-sans h-[100dvh] overflow-hidden antialiased select-none">
 
-  <div id="app" class="flex flex-col h-screen">
+  <div id="app" class="flex flex-col h-[100dvh] overflow-hidden">
 
     <!-- MAIN APP LAYOUT (Sidebar + Main View) -->
-    <div class="flex flex-1 overflow-hidden">
+    <div class="flex flex-1 overflow-hidden relative">
+
+      <!-- MOBILE SIDEBAR BACKDROP -->
+      <div 
+        v-if="sidebarOpen" 
+        @click="sidebarOpen = false" 
+        class="fixed inset-0 bg-black/70 backdrop-blur-xs z-20 md:hidden transition-opacity"
+      ></div>
       
       <!-- SIDEBAR -->
       <aside 
-        class="w-64 bg-nile-surface border-r border-nile-border flex flex-col z-30 transition-all duration-300 md:translate-x-0 fixed md:relative h-full"
+        class="w-64 max-w-[80vw] bg-nile-surface border-r border-nile-border flex flex-col z-30 transition-transform duration-300 md:translate-x-0 fixed md:relative inset-y-0 left-0 h-full"
         :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'"
       >
         <!-- Logo Header -->
-        <div class="p-6 flex items-center justify-between">
+        <div class="p-5 sm:p-6 flex items-center justify-between">
           <div class="flex items-center space-x-3 cursor-pointer" @click="navigate('home')">
             <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-nile-yellow to-nile-blue flex items-center justify-center shadow-lg shadow-nile-yellow/20">
               <i class="fa-solid fa-water text-nile-darkBg text-lg"></i>
@@ -132,7 +139,7 @@
         <div class="px-5 flex items-center justify-between mb-2">
           <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Playlists</span>
           <button 
-            @click="openModal('createPlaylist')" 
+            @click="handleOpenCreatePlaylist" 
             class="text-slate-400 hover:text-nile-yellow text-sm p-1 transition"
             title="Criar Playlist"
           >
@@ -164,7 +171,7 @@
                 v-if="user.avatarUrl" 
                 :src="user.avatarUrl" 
                 :alt="user.displayName" 
-                class="w-9 h-9 rounded-full object-cover border border-nile-yellow/50 shadow"
+                class="w-9 h-9 rounded-full object-cover border border-nile-yellow/50 shadow shrink-0"
               />
               <div v-else class="w-9 h-9 rounded-full bg-gradient-to-tr from-nile-yellow to-nile-blue flex items-center justify-center font-bold text-nile-darkBg text-xs uppercase shadow shrink-0">
                 {{ user.displayName ? user.displayName.substring(0, 2) : 'NL' }}
@@ -186,7 +193,7 @@
 
           <div v-else>
             <button 
-              @click="openModal('auth')" 
+              @click="openAuthModal()" 
               class="w-full py-2.5 px-4 rounded-xl bg-nile-yellow hover:bg-nile-yellowHover text-nile-darkBg font-bold text-xs uppercase tracking-wider transition shadow-lg shadow-nile-yellow/20"
             >
               <i class="fa-solid fa-user-lock mr-2"></i>Entrar / Cadastrar
@@ -197,30 +204,30 @@
       </aside>
 
       <!-- MAIN CONTENT AREA -->
-      <main class="flex-1 flex flex-col h-full overflow-hidden bg-nile-darkBg relative">
+      <main class="flex-1 flex flex-col h-full min-w-0 overflow-hidden bg-nile-darkBg relative">
         
         <!-- Sticky Top Bar -->
-        <header class="h-16 border-b border-nile-border/60 px-6 flex items-center justify-between z-10 bg-nile-darkBg/80 backdrop-blur-md sticky top-0">
-          <div class="flex items-center space-x-4">
-            <button @click="sidebarOpen = !sidebarOpen" class="md:hidden text-slate-300 hover:text-white p-2">
+        <header class="h-16 border-b border-nile-border/60 px-3 sm:px-6 flex items-center justify-between gap-2 sm:gap-4 z-10 bg-nile-darkBg/90 backdrop-blur-md sticky top-0 shrink-0">
+          <div class="flex items-center space-x-2 sm:space-x-4 flex-1 min-w-0">
+            <button @click="sidebarOpen = !sidebarOpen" class="md:hidden text-slate-300 hover:text-white p-2 shrink-0" aria-label="Abrir Menu">
               <i class="fa-solid fa-bars text-xl"></i>
             </button>
 
             <!-- Catalog Search Bar -->
-            <div class="relative w-64 md:w-96">
-              <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
+            <div class="relative flex-1 max-w-md min-w-0">
+              <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs sm:text-sm"></i>
               <input 
                 v-model="searchQuery"
                 @input="searchCatalog"
                 @focus="currentView = 'search'"
                 type="text" 
-                placeholder="Buscar artista, música ou álbum..." 
-                class="w-full bg-nile-card border border-nile-border rounded-full pl-10 pr-10 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-nile-yellow transition"
+                placeholder="Buscar artista, álbum ou música..." 
+                class="w-full bg-nile-card border border-nile-border rounded-full pl-9 sm:pl-10 pr-8 sm:pr-10 py-2 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-nile-yellow transition"
               />
               <button 
                 v-if="searchQuery" 
-                @click="searchQuery = ''; searchResults = [...catalogTracks]" 
-                class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs"
+                @click="searchQuery = ''; searchCatalog()" 
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs p-1"
               >
                 <i class="fa-solid fa-xmark"></i>
               </button>
@@ -228,52 +235,53 @@
           </div>
 
           <!-- Right Action Shortcuts -->
-          <div class="flex items-center space-x-3">
+          <div class="flex items-center space-x-2 sm:space-x-3 shrink-0">
             <button 
-              @click="openModal('createPlaylist')" 
-              class="hidden sm:flex items-center space-x-2 bg-nile-card hover:bg-nile-hover border border-nile-border text-slate-200 px-3.5 py-1.5 rounded-full text-xs font-semibold transition"
+              @click="handleOpenCreatePlaylist" 
+              class="flex items-center space-x-1.5 bg-nile-card hover:bg-nile-hover border border-nile-border text-slate-200 p-2 sm:px-3.5 sm:py-1.5 rounded-full text-xs font-semibold transition"
+              title="Nova Playlist"
             >
               <i class="fa-solid fa-plus text-nile-yellow"></i>
-              <span>Nova Playlist</span>
+              <span class="hidden lg:inline">Nova Playlist</span>
             </button>
 
             <!-- User Auth status badge -->
             <button 
-              @click="user ? openEditProfile() : openModal('auth')"
-              class="flex items-center space-x-2 bg-nile-card px-3.5 py-1.5 rounded-full border border-nile-border hover:border-nile-blue transition"
+              @click="user ? openEditProfile() : openAuthModal()"
+              class="flex items-center space-x-2 bg-nile-card px-2.5 sm:px-3.5 py-1.5 rounded-full border border-nile-border hover:border-nile-blue transition max-w-[130px] sm:max-w-[180px]"
             >
               <img 
                 v-if="user && user.avatarUrl" 
                 :src="user.avatarUrl" 
-                class="w-5 h-5 rounded-full object-cover border border-nile-yellow/50"
+                class="w-5 h-5 rounded-full object-cover border border-nile-yellow/50 shrink-0"
               />
-              <i v-else class="fa-solid fa-circle-user text-nile-blue"></i>
-              <span class="text-xs font-semibold text-slate-200">{{ user ? user.displayName : 'Fazer Login' }}</span>
+              <i v-else class="fa-solid fa-circle-user text-nile-blue shrink-0"></i>
+              <span class="text-xs font-semibold text-slate-200 truncate">{{ user ? user.displayName : 'Entrar' }}</span>
             </button>
           </div>
         </header>
 
         <!-- DYNAMIC SCROLLABLE BODY CONTENT -->
-        <div class="flex-1 overflow-y-auto p-6 pb-36">
+        <div class="flex-1 overflow-y-auto p-4 sm:p-6 pb-44 md:pb-32">
           
           <!-- VIEW: HOME (INÍCIO) -->
-          <div v-if="currentView === 'home'" class="space-y-8 animate-fadeIn">
+          <div v-if="currentView === 'home'" class="space-y-6 sm:space-y-8 animate-fadeIn">
             
             <!-- Hero Banner -->
-            <div class="relative rounded-3xl bg-gradient-to-r from-sky-950/70 via-nile-card to-amber-950/40 p-8 border border-nile-yellow/20 overflow-hidden shadow-2xl">
+            <div class="relative rounded-2xl sm:rounded-3xl bg-gradient-to-r from-sky-950/70 via-nile-card to-amber-950/40 p-5 sm:p-8 border border-nile-yellow/20 overflow-hidden shadow-2xl">
               <div class="absolute -right-12 -bottom-12 w-80 h-80 bg-nile-blue/15 rounded-full blur-3xl pointer-events-none"></div>
               <div class="absolute left-1/3 -top-16 w-64 h-64 bg-nile-yellow/10 rounded-full blur-3xl pointer-events-none"></div>
               
-              <span class="text-nile-blue font-bold text-xs tracking-widest uppercase mb-1 block">ACERVO EXCLUSIVO NILE</span>
-              <h2 class="text-3xl sm:text-5xl font-black text-white tracking-tight mb-3">O fluxo perfeito para sua música.</h2>
-              <p class="text-slate-300 text-sm max-w-xl leading-relaxed">
+              <span class="text-nile-blue font-bold text-[10px] sm:text-xs tracking-widest uppercase mb-1 block">ACERVO EXCLUSIVO NILE</span>
+              <h2 class="text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight mb-2 sm:mb-3 leading-tight">O fluxo perfeito para sua música.</h2>
+              <p class="text-slate-300 text-xs sm:text-sm max-w-xl leading-relaxed">
                 Ouça faixas hospedadas diretamente em nosso servidor na nuvem, explore páginas de artistas e organize suas playlists favoritas.
               </p>
 
-              <div class="mt-6 flex flex-wrap gap-3">
+              <div class="mt-5 sm:mt-6 flex flex-wrap gap-2.5 sm:gap-3">
                 <button 
                   @click="playTrackList(catalogTracks)" 
-                  class="bg-nile-yellow hover:bg-nile-yellowHover text-nile-darkBg px-6 py-3 rounded-full font-extrabold text-sm flex items-center space-x-2 transition shadow-lg shadow-nile-yellow/20 active:scale-95"
+                  class="bg-nile-yellow hover:bg-nile-yellowHover text-nile-darkBg px-5 sm:px-6 py-2.5 sm:py-3 rounded-full font-extrabold text-xs sm:text-sm flex items-center space-x-2 transition shadow-lg shadow-nile-yellow/20 active:scale-95"
                 >
                   <i class="fa-solid fa-play text-xs"></i>
                   <span>Tocar Catálogo</span>
@@ -282,7 +290,7 @@
                 <button 
                   v-if="popularArtists.length > 0"
                   @click="openArtistPage(popularArtists[0].name)" 
-                  class="bg-nile-blue/15 hover:bg-nile-blue/25 text-nile-blue px-5 py-3 rounded-full font-bold text-sm border border-nile-blue/30 transition"
+                  class="bg-nile-blue/15 hover:bg-nile-blue/25 text-nile-blue px-4 sm:px-5 py-2.5 sm:py-3 rounded-full font-bold text-xs sm:text-sm border border-nile-blue/30 transition"
                 >
                   Explorar Artista
                 </button>
@@ -291,7 +299,7 @@
 
             <!-- Catalog Tracks Grid -->
             <div>
-              <h3 class="text-xl font-black mb-4 flex items-center space-x-2">
+              <h3 class="text-lg sm:text-xl font-black mb-3 sm:mb-4 flex items-center space-x-2">
                 <i class="fa-solid fa-fire text-nile-yellow"></i>
                 <span>Músicas Disponíveis</span>
               </h3>
@@ -300,20 +308,29 @@
                 <i class="fa-solid fa-circle-notch fa-spin text-nile-yellow text-3xl"></i>
               </div>
 
-              <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 <div 
                   v-for="track in catalogTracks" 
                   :key="'home-' + track.id"
                   @click="playTrack(track)"
-                  class="group flex items-center space-x-4 bg-nile-card hover:bg-nile-hover p-3 rounded-2xl border border-nile-border cursor-pointer transition relative overflow-hidden"
+                  class="group flex items-center space-x-3 sm:space-x-4 bg-nile-card hover:bg-nile-hover p-2.5 sm:p-3 rounded-2xl border border-nile-border cursor-pointer transition relative overflow-hidden"
                 >
-                  <img :src="track.cover" :alt="track.title" class="w-16 h-16 rounded-xl object-cover shadow" />
+                  <img :src="track.cover" :alt="track.title" class="w-14 h-14 sm:w-16 sm:h-16 rounded-xl object-cover shadow shrink-0" />
                   <div class="flex-1 min-w-0">
                     <p class="font-bold text-sm text-white truncate" :class="currentTrack && currentTrack.id === track.id ? 'text-nile-yellow' : ''">{{ track.title }}</p>
                     <p class="text-xs text-nile-blue/90 truncate hover:underline" @click.stop="openArtistPage(track.artist)">{{ track.artist }}</p>
+                    <p class="text-[11px] text-slate-500 truncate">{{ track.album }}</p>
                   </div>
+
+                  <button 
+                    @click.stop="toggleLikeTrack(track)"
+                    class="p-2 text-slate-400 hover:text-nile-yellow transition shrink-0"
+                    :title="isTrackLiked(track.id) ? 'Remover dos favoritos' : 'Salvar como favorita'"
+                  >
+                    <i :class="isTrackLiked(track.id) ? 'fa-solid fa-heart text-nile-yellow' : 'fa-regular fa-heart'"></i>
+                  </button>
                   
-                  <button class="w-10 h-10 rounded-full bg-nile-yellow text-nile-darkBg flex items-center justify-center opacity-0 group-hover:opacity-100 group-hover:scale-105 transition shadow-lg mr-2">
+                  <button class="hidden sm:flex w-10 h-10 rounded-full bg-nile-yellow text-nile-darkBg items-center justify-center opacity-0 group-hover:opacity-100 group-hover:scale-105 transition shadow-lg mr-1 shrink-0">
                     <i class="fa-solid fa-play translate-x-0.5 text-xs"></i>
                   </button>
                 </div>
@@ -322,750 +339,12 @@
 
             <!-- Featured Artists Grid -->
             <div>
-              <div class="flex items-center justify-between mb-4">
-                <h3 class="text-xl font-black">Artistas no Servidor</h3>
-                <span class="text-xs text-slate-400">Clique para abrir a página do artista</span>
+              <div class="flex items-center justify-between mb-3 sm:mb-4">
+                <h3 class="text-lg sm:text-xl font-black">Artistas no Servidor</h3>
+                <span class="text-[11px] sm:text-xs text-slate-400 hidden sm:inline">Clique para abrir a página do artista</span>
               </div>
 
-              <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
                 <div 
                   v-for="artist in popularArtists" 
-                  :key="artist.name"
-                  @click="openArtistPage(artist.name)"
-                  class="group bg-nile-card hover:bg-nile-hover p-4 rounded-2xl border border-nile-border/80 transition flex flex-col items-center text-center cursor-pointer"
-                >
-                  <div class="w-24 h-24 rounded-full overflow-hidden mb-3 bg-nile-hover shadow-xl border-2 border-transparent group-hover:border-nile-blue transition">
-                    <img :src="artist.image" :alt="artist.name" class="w-full h-full object-cover group-hover:scale-110 transition duration-300" />
-                  </div>
-                  <h4 class="font-bold text-sm text-white truncate w-full group-hover:text-nile-yellow transition">{{ artist.name }}</h4>
-                  <p class="text-[11px] text-nile-blue mt-1">{{ artist.genre }}</p>
-                </div>
-              </div>
-            </div>
-
-          </div>
-
-          <!-- VIEW: SEARCH (BUSCA NO CATÁLOGO JSON) -->
-          <div v-if="currentView === 'search'" class="space-y-6 animate-fadeIn">
-            <div>
-              <h2 class="text-3xl font-black mb-1">Buscar no Catálogo</h2>
-              <p class="text-xs text-slate-400">Pesquise por título, artista, álbum ou gênero musical</p>
-            </div>
-
-            <!-- Search Quick Genre/Artist Tags -->
-            <div class="flex flex-wrap gap-2">
-              <button 
-                @click="searchQuery = ''; searchCatalog()"
-                class="px-4 py-1.5 rounded-full text-xs font-semibold bg-nile-yellow text-nile-darkBg transition"
-              >
-                Todas
-              </button>
-              <button 
-                v-for="artist in popularArtists"
-                :key="'tag-' + artist.name"
-                @click="searchQuery = artist.name; searchCatalog()"
-                class="px-4 py-1.5 rounded-full text-xs font-semibold bg-nile-card hover:bg-nile-hover text-nile-blue border border-nile-border transition"
-              >
-                {{ artist.name }}
-              </button>
-            </div>
-
-            <!-- Track List Results -->
-            <div v-if="searchResults.length > 0" class="bg-nile-card rounded-2xl border border-nile-border overflow-hidden">
-              <div class="p-4 border-b border-nile-border/60 flex items-center justify-between text-xs text-slate-400 font-bold">
-                <span>FAIXAS NO CATÁLOGO ({{ searchResults.length }})</span>
-                <span>AÇÕES</span>
-              </div>
-
-              <div class="divide-y divide-nile-border/40">
-                <div 
-                  v-for="(track, idx) in searchResults" 
-                  :key="'sr-' + track.id + '-' + idx"
-                  @click="playTrack(track)"
-                  class="flex items-center justify-between p-3.5 hover:bg-nile-hover transition group cursor-pointer"
-                >
-                  <div class="flex items-center space-x-4 min-w-0">
-                    <span class="w-6 text-center text-xs text-slate-500 font-bold group-hover:text-white">
-                      <i v-if="currentTrack && currentTrack.id === track.id && isPlaying" class="fa-solid fa-volume-high text-nile-yellow"></i>
-                      <span v-else>{{ idx + 1 }}</span>
-                    </span>
-
-                    <img :src="track.cover" :alt="track.title" class="w-12 h-12 rounded-xl object-cover shadow" />
-
-                    <div class="min-w-0">
-                      <p class="font-bold text-sm text-white truncate group-hover:text-nile-yellow transition" :class="currentTrack && currentTrack.id === track.id ? 'text-nile-yellow' : ''">
-                        {{ track.title }}
-                      </p>
-                      <p class="text-xs text-slate-400 truncate">
-                        <span class="text-nile-blue hover:underline" @click.stop="openArtistPage(track.artist)">{{ track.artist }}</span> 
-                        • {{ track.album }}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div class="flex items-center space-x-3">
-                    <button 
-                      @click.stop="toggleLikeTrack(track)"
-                      class="text-slate-500 hover:text-nile-yellow p-2 transition text-sm"
-                      :title="isTrackLiked(track.id) ? 'Descurtir' : 'Curtir'"
-                    >
-                      <i :class="isTrackLiked(track.id) ? 'fa-solid fa-heart text-nile-yellow' : 'fa-regular fa-heart'"></i>
-                    </button>
-
-                    <button 
-                      @click.stop="openAddToPlaylistModal(track)"
-                      class="text-slate-500 hover:text-nile-blue p-2 transition text-sm opacity-0 group-hover:opacity-100"
-                      title="Adicionar à Playlist"
-                    >
-                      <i class="fa-solid fa-plus"></i>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Empty Search State -->
-            <div v-else class="p-16 text-center bg-nile-card rounded-2xl border border-nile-border text-slate-500">
-              <i class="fa-solid fa-magnifying-glass text-4xl mb-3 text-slate-600 block"></i>
-              <p class="text-sm font-semibold">Nenhuma música encontrada para "{{ searchQuery }}".</p>
-              <p class="text-xs text-slate-600 mt-1">Tente buscar outro nome de música ou artista do catálogo.</p>
-            </div>
-          </div>
-
-          <!-- VIEW: ARTIST PAGE (PÁGINA DEDICADA DO ARTISTA) -->
-          <div v-if="currentView === 'artist' && artistData" class="space-y-8 animate-fadeIn">
-            
-            <!-- Artist Header Banner -->
-            <div class="relative rounded-3xl bg-gradient-to-r from-sky-950/80 via-nile-card to-amber-950/40 p-8 border border-nile-border overflow-hidden">
-              <div class="flex flex-col sm:flex-row items-center sm:items-end space-y-6 sm:space-y-0 sm:space-x-8 relative z-10">
-                <img :src="artistData.image" :alt="artistData.name" class="w-40 h-40 rounded-full object-cover shadow-2xl border-4 border-nile-blue/40" />
-                
-                <div class="space-y-3 text-center sm:text-left flex-1">
-                  <div class="flex items-center justify-center sm:justify-start space-x-2 text-nile-blue font-bold text-xs tracking-widest uppercase">
-                    <i class="fa-solid fa-circle-check"></i>
-                    <span>ARTISTA VERIFICADO</span>
-                  </div>
-
-                  <h1 class="text-4xl sm:text-6xl font-black text-white tracking-tight">{{ artistData.name }}</h1>
-                  
-                  <div class="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-xs text-slate-300">
-                    <span class="bg-nile-darkBg px-3 py-1 rounded-full border border-nile-border text-nile-yellow">{{ artistData.genre || 'Música' }}</span>
-                    <span>• {{ artistData.tracks.length }} Faixas no Servidor</span>
-                  </div>
-
-                  <div class="pt-2 flex flex-wrap justify-center sm:justify-start gap-3">
-                    <button 
-                      @click="playTrackList(artistData.tracks)" 
-                      class="bg-nile-yellow hover:bg-nile-yellowHover text-nile-darkBg px-6 py-2.5 rounded-full font-bold text-xs uppercase tracking-wider flex items-center space-x-2 shadow-lg shadow-nile-yellow/20 transition active:scale-95"
-                    >
-                      <i class="fa-solid fa-play"></i>
-                      <span>Tocar Artista</span>
-                    </button>
-
-                    <button 
-                      @click="toggleFavoriteArtist(artistData)" 
-                      :class="isArtistFavorited(artistData.name) ? 'bg-nile-blue text-nile-darkBg border-nile-blue' : 'bg-nile-card text-white border-nile-border hover:bg-nile-hover'"
-                      class="px-5 py-2.5 rounded-full font-bold text-xs border uppercase tracking-wider flex items-center space-x-2 transition"
-                    >
-                      <i :class="isArtistFavorited(artistData.name) ? 'fa-solid fa-star' : 'fa-regular fa-star'"></i>
-                      <span>{{ isArtistFavorited(artistData.name) ? 'Favoritado' : 'Favoritar Artista' }}</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Artist Popular Tracks -->
-            <div>
-              <h3 class="text-2xl font-black mb-4">Músicas do Artista</h3>
-
-              <div class="bg-nile-card rounded-2xl border border-nile-border overflow-hidden">
-                <div class="divide-y divide-nile-border/40">
-                  <div 
-                    v-for="(track, idx) in artistData.tracks" 
-                    :key="'art-tr-' + track.id"
-                    @click="playTrack(track)"
-                    class="flex items-center justify-between p-3.5 hover:bg-nile-hover transition group cursor-pointer"
-                  >
-                    <div class="flex items-center space-x-4 min-w-0">
-                      <span class="w-6 text-center text-xs text-slate-500 font-bold group-hover:text-white">{{ idx + 1 }}</span>
-                      <img :src="track.cover" class="w-11 h-11 rounded-lg object-cover shadow" />
-                      <div class="min-w-0">
-                        <p class="font-bold text-sm text-white truncate group-hover:text-nile-yellow transition">{{ track.title }}</p>
-                        <p class="text-xs text-slate-400 truncate">{{ track.album }}</p>
-                      </div>
-                    </div>
-
-                    <div class="flex items-center space-x-3">
-                      <button @click.stop="toggleLikeTrack(track)" class="text-slate-500 hover:text-nile-yellow p-2 text-sm">
-                        <i :class="isTrackLiked(track.id) ? 'fa-solid fa-heart text-nile-yellow' : 'fa-regular fa-heart'"></i>
-                      </button>
-                      <button @click.stop="openAddToPlaylistModal(track)" class="text-slate-500 hover:text-nile-blue p-2 text-sm">
-                        <i class="fa-solid fa-plus"></i>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-          </div>
-
-          <!-- VIEW: LIBRARY (SUA BIBLIOTECA) -->
-          <div v-if="currentView === 'library'" class="space-y-6 animate-fadeIn">
-            <div>
-              <h2 class="text-3xl font-black mb-1">Sua Biblioteca</h2>
-              <p class="text-xs text-slate-400">Acesse suas playlists, músicas favoritadas e artistas salvos</p>
-            </div>
-
-            <!-- Quick Cards Navigation inside Library -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div @click="navigate('liked')" class="bg-gradient-to-br from-amber-950/60 to-nile-card p-6 rounded-2xl border border-nile-yellow/25 cursor-pointer hover:scale-[1.02] transition">
-                <i class="fa-solid fa-heart text-nile-yellow text-3xl mb-3"></i>
-                <h3 class="font-bold text-lg text-white">Músicas Curtidas</h3>
-                <p class="text-xs text-slate-400 mt-1">{{ likedTracks.length }} faixas na sua coleção</p>
-              </div>
-
-              <div @click="navigate('favArtists')" class="bg-gradient-to-br from-sky-950/70 to-nile-card p-6 rounded-2xl border border-nile-blue/25 cursor-pointer hover:scale-[1.02] transition">
-                <i class="fa-solid fa-star text-nile-blue text-3xl mb-3"></i>
-                <h3 class="font-bold text-lg text-white">Artistas Favoritos</h3>
-                <p class="text-xs text-slate-400 mt-1">{{ favoriteArtists.length }} artistas seguidos</p>
-              </div>
-
-              <div @click="openModal('createPlaylist')" class="bg-gradient-to-br from-slate-800/60 to-nile-card p-6 rounded-2xl border border-nile-border cursor-pointer hover:scale-[1.02] transition">
-                <i class="fa-solid fa-plus-circle text-nile-yellow text-3xl mb-3"></i>
-                <h3 class="font-bold text-lg text-white">Criar Playlist</h3>
-                <p class="text-xs text-slate-400 mt-1">Monte sua combinação de músicas</p>
-              </div>
-            </div>
-
-            <!-- All Playlists -->
-            <h3 class="text-xl font-bold pt-4">Suas Playlists</h3>
-            <div v-if="playlists.length === 0" class="p-8 text-center bg-nile-card rounded-2xl text-slate-500">
-              Nenhuma playlist criada ainda.
-            </div>
-            <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div 
-                v-for="p in playlists" 
-                :key="p.id"
-                @click="openPlaylist(p)"
-                class="bg-nile-card hover:bg-nile-hover p-4 rounded-2xl border border-nile-border cursor-pointer flex items-center space-x-4 transition group"
-              >
-                <div class="w-14 h-14 rounded-xl bg-nile-hover flex items-center justify-center text-nile-blue text-2xl group-hover:bg-nile-yellow group-hover:text-nile-darkBg transition">
-                  <i class="fa-solid fa-record-vinyl"></i>
-                </div>
-                <div>
-                  <h4 class="font-bold text-sm text-white group-hover:text-nile-yellow transition">{{ p.name }}</h4>
-                  <p class="text-xs text-slate-400">{{ p.tracks.length }} faixas adicionadas</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- VIEW: LIKED SONGS (FAVORITAS) -->
-          <div v-if="currentView === 'liked'" class="space-y-6 animate-fadeIn">
-            <div class="flex flex-col sm:flex-row items-start sm:items-end space-y-4 sm:space-y-0 sm:space-x-6 p-6 rounded-3xl bg-gradient-to-r from-amber-950/60 via-nile-card to-sky-950/40 border border-nile-yellow/25">
-              <div class="w-32 h-32 rounded-2xl bg-gradient-to-br from-nile-yellow to-amber-300 flex items-center justify-center text-nile-darkBg text-5xl shadow-2xl">
-                <i class="fa-solid fa-heart"></i>
-              </div>
-              <div class="space-y-2">
-                <span class="text-xs font-bold text-nile-yellow uppercase tracking-widest">COLEÇÃO</span>
-                <h2 class="text-3xl sm:text-4xl font-black text-white">Músicas Curtidas</h2>
-                <p class="text-xs text-slate-400">{{ likedTracks.length }} faixas armazenadas na sua conta</p>
-                
-                <button 
-                  v-if="likedTracks.length > 0"
-                  @click="playTrackList(likedTracks)" 
-                  class="mt-2 bg-nile-yellow hover:bg-nile-yellowHover text-nile-darkBg px-6 py-2.5 rounded-full font-bold text-xs uppercase tracking-wider shadow-lg flex items-center space-x-2 transition"
-                >
-                  <i class="fa-solid fa-play"></i>
-                  <span>Tocar Curtidas</span>
-                </button>
-              </div>
-            </div>
-
-            <div v-if="likedTracks.length === 0" class="p-12 text-center bg-nile-card rounded-2xl border border-nile-border text-slate-500">
-              <i class="fa-regular fa-heart text-4xl mb-3 text-slate-600 block"></i>
-              <p class="text-sm font-semibold">Você ainda não salvou nenhuma música.</p>
-              <p class="text-xs text-slate-600 mt-1">Clique no coração em qualquer música para salvá-la aqui.</p>
-            </div>
-
-            <div v-else class="bg-nile-card rounded-2xl border border-nile-border overflow-hidden">
-              <div class="divide-y divide-nile-border/40">
-                <div 
-                  v-for="(track, idx) in likedTracks" 
-                  :key="'liked-' + track.id"
-                  @click="playTrack(track)"
-                  class="flex items-center justify-between p-3.5 hover:bg-nile-hover transition group cursor-pointer"
-                >
-                  <div class="flex items-center space-x-4 min-w-0">
-                    <span class="text-xs text-slate-500 w-6 text-center font-bold">{{ idx + 1 }}</span>
-                    <img :src="track.cover" class="w-10 h-10 rounded-lg object-cover" />
-                    <div class="min-w-0">
-                      <p class="font-bold text-sm text-white group-hover:text-nile-yellow transition truncate">{{ track.title }}</p>
-                      <p class="text-xs text-slate-400 truncate">{{ track.artist }}</p>
-                    </div>
-                  </div>
-
-                  <button @click.stop="toggleLikeTrack(track)" class="text-nile-yellow hover:text-slate-400 p-2 text-sm">
-                    <i class="fa-solid fa-heart"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- VIEW: FAVORITE ARTISTS -->
-          <div v-if="currentView === 'favArtists'" class="space-y-6 animate-fadeIn">
-            <div>
-              <h2 class="text-3xl font-black mb-1">Artistas Favoritos</h2>
-              <p class="text-xs text-slate-400">Artistas que você favoritou e acompanha</p>
-            </div>
-
-            <div v-if="favoriteArtists.length === 0" class="p-12 text-center bg-nile-card rounded-2xl border border-nile-border text-slate-500">
-              <i class="fa-solid fa-star text-4xl mb-3 text-slate-600 block"></i>
-              <p class="text-sm font-semibold">Nenhum artista favoritado.</p>
-            </div>
-
-            <div v-else class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              <div 
-                v-for="artist in favoriteArtists" 
-                :key="'fav-art-' + artist.name"
-                @click="openArtistPage(artist.name)"
-                class="bg-nile-card hover:bg-nile-hover p-4 rounded-2xl border border-nile-border text-center cursor-pointer transition group"
-              >
-                <img :src="artist.image" class="w-24 h-24 rounded-full mx-auto object-cover mb-3 shadow-lg border-2 border-nile-blue/50" />
-                <h4 class="font-bold text-sm text-white group-hover:text-nile-blue transition truncate">{{ artist.name }}</h4>
-                <p class="text-[11px] text-slate-400 mt-1">{{ artist.genre || 'Artista' }}</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- VIEW: PLAYLIST DETAIL -->
-          <div v-if="currentView === 'playlist' && activePlaylist" class="space-y-6 animate-fadeIn">
-            <div class="flex flex-col sm:flex-row items-start sm:items-end space-y-4 sm:space-y-0 sm:space-x-6 p-6 rounded-3xl bg-gradient-to-r from-sky-950/70 via-nile-card to-amber-950/40 border border-nile-border">
-              <div class="w-32 h-32 rounded-2xl bg-gradient-to-tr from-nile-yellow to-nile-blue flex items-center justify-center text-nile-darkBg text-5xl shadow-2xl font-black">
-                <i class="fa-solid fa-list-check"></i>
-              </div>
-
-              <div class="space-y-2 flex-1">
-                <span class="text-xs font-bold text-nile-blue uppercase tracking-widest">PLAYLIST</span>
-                <h2 class="text-3xl sm:text-4xl font-black text-white">{{ activePlaylist.name }}</h2>
-                <p class="text-xs text-slate-400">{{ activePlaylist.description || 'Sua playlist personalizada' }}</p>
-                <p class="text-[11px] text-slate-500">{{ activePlaylist.tracks.length }} faixas armazenadas</p>
-
-                <div class="flex items-center space-x-3 pt-2">
-                  <button 
-                    v-if="activePlaylist.tracks.length > 0"
-                    @click="playTrackList(activePlaylist.tracks)" 
-                    class="bg-nile-yellow hover:bg-nile-yellowHover text-nile-darkBg px-6 py-2 rounded-full font-bold text-xs uppercase tracking-wider flex items-center space-x-2 transition shadow-lg"
-                  >
-                    <i class="fa-solid fa-play"></i>
-                    <span>Tocar Tudo</span>
-                  </button>
-
-                  <button 
-                    @click="deletePlaylist(activePlaylist.id)"
-                    class="text-slate-400 hover:text-rose-400 border border-nile-border bg-nile-card px-4 py-2 rounded-full text-xs font-semibold transition"
-                  >
-                    Excluir Playlist
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Playlist Track List -->
-            <div v-if="activePlaylist.tracks.length === 0" class="p-12 text-center bg-nile-card rounded-2xl border border-nile-border text-slate-500">
-              Esta playlist está vazia. Adicione faixas navegando no catálogo!
-            </div>
-
-            <div v-else class="bg-nile-card rounded-2xl border border-nile-border overflow-hidden">
-              <div class="divide-y divide-nile-border/40">
-                <div 
-                  v-for="(track, idx) in activePlaylist.tracks" 
-                  :key="'pl-tr-' + track.id"
-                  @click="playTrack(track)"
-                  class="flex items-center justify-between p-3.5 hover:bg-nile-hover transition group cursor-pointer"
-                >
-                  <div class="flex items-center space-x-4 min-w-0">
-                    <span class="text-xs text-slate-500 w-6 text-center font-bold">{{ idx + 1 }}</span>
-                    <img :src="track.cover" class="w-10 h-10 rounded-lg object-cover" />
-                    <div class="min-w-0">
-                      <p class="font-bold text-sm text-white group-hover:text-nile-yellow transition truncate">{{ track.title }}</p>
-                      <p class="text-xs text-slate-400 truncate">{{ track.artist }}</p>
-                    </div>
-                  </div>
-
-                  <button 
-                    @click.stop="removeFromPlaylist(activePlaylist.id, track.id)" 
-                    class="text-slate-500 hover:text-rose-400 p-2 text-xs"
-                    title="Remover da Playlist"
-                  >
-                    <i class="fa-solid fa-trash"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- FIXED STICKY AUDIO PLAYER BAR -->
-        <footer class="fixed bottom-0 left-0 right-0 h-24 glass-player border-t border-nile-border px-4 sm:px-6 flex items-center justify-between z-40">
-          
-          <!-- LEFT: Current Track Info -->
-          <div class="flex items-center space-x-3 w-1/4 min-w-[180px]">
-            <template v-if="currentTrack">
-              <div class="relative group">
-                <img :src="currentTrack.cover" :alt="currentTrack.title" class="w-14 h-14 rounded-xl object-cover shadow-lg border border-nile-border" />
-                <div v-if="isPlaying" class="absolute inset-0 bg-nile-darkBg/55 rounded-xl flex items-center justify-center space-x-0.5">
-                  <span class="w-1 bg-nile-yellow rounded-full eq-bar"></span>
-                  <span class="w-1 bg-nile-blue rounded-full eq-bar"></span>
-                  <span class="w-1 bg-nile-yellow rounded-full eq-bar"></span>
-                </div>
-              </div>
-
-              <div class="min-w-0 flex-1">
-                <h4 class="font-bold text-sm text-white truncate hover:underline cursor-pointer">{{ currentTrack.title }}</h4>
-                <p class="text-xs text-nile-blue truncate hover:underline cursor-pointer" @click="openArtistPage(currentTrack.artist)">{{ currentTrack.artist }}</p>
-              </div>
-
-              <button @click="toggleLikeTrack(currentTrack)" class="text-slate-400 hover:text-nile-yellow p-1.5 text-sm transition">
-                <i :class="isTrackLiked(currentTrack.id) ? 'fa-solid fa-heart text-nile-yellow' : 'fa-regular fa-heart'"></i>
-              </button>
-            </template>
-            
-            <template v-else>
-              <div class="w-14 h-14 rounded-xl bg-nile-hover flex items-center justify-center text-nile-blue/60">
-                <i class="fa-solid fa-music text-xl"></i>
-              </div>
-              <div>
-                <p class="text-xs font-bold text-slate-400">Nenhuma faixa selecionada</p>
-                <p class="text-[10px] text-slate-500">Selecione para ouvir o áudio</p>
-              </div>
-            </template>
-          </div>
-
-          <!-- CENTER: Playback Controls & Seekbar -->
-          <div class="flex flex-col items-center justify-center w-2/4 max-w-xl space-y-1.5">
-            <div class="flex items-center space-x-5">
-              <button @click="isShuffle = !isShuffle" :class="isShuffle ? 'text-nile-blue' : 'text-slate-400 hover:text-white'" class="text-xs p-1">
-                <i class="fa-solid fa-shuffle"></i>
-              </button>
-
-              <button @click="prevTrack" class="text-slate-300 hover:text-white text-base p-1">
-                <i class="fa-solid fa-backward-step"></i>
-              </button>
-
-              <button 
-                @click="togglePlay" 
-                class="w-11 h-11 rounded-full bg-nile-yellow hover:bg-nile-yellowHover text-nile-darkBg flex items-center justify-center shadow-lg shadow-nile-yellow/25 active:scale-95 transition"
-              >
-                <i :class="isPlaying ? 'fa-solid fa-pause' : 'fa-solid fa-play translate-x-0.5'" class="text-sm"></i>
-              </button>
-
-              <button @click="nextTrack" class="text-slate-300 hover:text-white text-base p-1">
-                <i class="fa-solid fa-forward-step"></i>
-              </button>
-
-              <button @click="isRepeat = !isRepeat" :class="isRepeat ? 'text-nile-blue' : 'text-slate-400 hover:text-white'" class="text-xs p-1">
-                <i class="fa-solid fa-repeat"></i>
-              </button>
-            </div>
-
-            <!-- Audio Seekbar -->
-            <div class="w-full flex items-center space-x-3 text-[11px] text-slate-400 font-mono">
-              <span>{{ formatTime(currentTime) }}</span>
-              <input 
-                type="range" 
-                min="0" 
-                :max="duration || 100" 
-                :value="currentTime" 
-                @input="seekAudio($event.target.value)"
-                class="w-full h-1"
-              />
-              <span>{{ formatTime(duration) }}</span>
-            </div>
-          </div>
-
-          <!-- RIGHT: Volume slider -->
-          <div class="flex items-center justify-end space-x-3 w-1/4 min-w-[140px]">
-            <button @click="toggleMute" class="text-slate-400 hover:text-white text-sm">
-              <i v-if="isMuted || volume === 0" class="fa-solid fa-volume-xmark text-rose-400"></i>
-              <i v-else class="fa-solid fa-volume-high text-nile-blue"></i>
-            </button>
-            <input 
-              type="range" 
-              min="0" 
-              max="1" 
-              step="0.01" 
-              :value="isMuted ? 0 : volume" 
-              @input="setVolume($event.target.value)"
-              class="w-20 h-1"
-            />
-          </div>
-
-        </footer>
-
-      </main>
-
-    </div>
-
-    <!-- HIDDEN AUDIO ENGINE -->
-    <audio 
-      ref="audioRef"
-      @timeupdate="onTimeUpdate"
-      @loadedmetadata="onLoadedMetadata"
-      @ended="onTrackEnded"
-      @error="onAudioError"
-    ></audio>
-
-    <!-- MODAL: AUTHENTICATION (LOGIN / REGISTER) -->
-    <div v-if="activeModal === 'auth'" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-      <div class="bg-nile-card border border-nile-border rounded-3xl w-full max-w-md p-6 shadow-2xl relative space-y-4">
-        <button @click="closeModal" class="absolute right-5 top-5 text-slate-400 hover:text-white text-lg">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-
-        <div class="text-center space-y-1">
-          <div class="w-12 h-12 rounded-2xl bg-nile-yellow/20 text-nile-yellow flex items-center justify-center text-xl mx-auto mb-2">
-            <i class="fa-solid fa-user-lock"></i>
-          </div>
-          <h3 class="text-xl font-black text-white">Sua Conta Nile</h3>
-          <p class="text-xs text-slate-400">
-            {{ isSupabaseConfigured ? 'Conectado ao servidor Supabase' : 'Modo Local (configure as chaves do Supabase para nuvem)' }}
-          </p>
-        </div>
-
-        <form @submit.prevent="handleAuthSubmit" class="space-y-3 text-xs pt-2">
-          <div v-if="authMode === 'register'">
-            <label class="block text-slate-400 mb-1 font-semibold">Nome Completo *</label>
-            <input 
-              v-model="authForm.displayName" 
-              type="text" 
-              required
-              placeholder="Seu nome" 
-              class="w-full bg-nile-darkBg border border-nile-border rounded-xl px-3.5 py-2.5 text-slate-100 focus:outline-none focus:border-nile-yellow"
-            />
-          </div>
-
-          <div>
-            <label class="block text-slate-400 mb-1 font-semibold">Endereço de E-mail *</label>
-            <input 
-              v-model="authForm.email" 
-              type="email" 
-              required
-              placeholder="exemplo@email.com" 
-              class="w-full bg-nile-darkBg border border-nile-border rounded-xl px-3.5 py-2.5 text-slate-100 focus:outline-none focus:border-nile-yellow"
-            />
-          </div>
-
-          <div>
-            <label class="block text-slate-400 mb-1 font-semibold">Senha (mínimo 6 caracteres) *</label>
-            <input 
-              v-model="authForm.password" 
-              type="password" 
-              minlength="6"
-              required
-              placeholder="••••••••" 
-              class="w-full bg-nile-darkBg border border-nile-border rounded-xl px-3.5 py-2.5 text-slate-100 focus:outline-none focus:border-nile-yellow"
-            />
-          </div>
-
-          <button 
-            type="submit" 
-            :disabled="authLoading"
-            class="w-full py-3 rounded-xl bg-nile-yellow hover:bg-nile-yellowHover disabled:opacity-60 text-nile-darkBg font-black uppercase tracking-wider text-xs shadow-lg transition flex items-center justify-center space-x-2"
-          >
-            <i v-if="authLoading" class="fa-solid fa-circle-notch fa-spin"></i>
-            <span>{{ authMode === 'login' ? 'Entrar na Conta' : 'Criar Minha Conta' }}</span>
-          </button>
-        </form>
-
-        <div class="text-center pt-2">
-          <button 
-            @click="authMode = (authMode === 'login' ? 'register' : 'login')" 
-            class="text-xs text-nile-blue hover:underline font-semibold"
-          >
-            {{ authMode === 'login' ? 'Não tem conta? Cadastre-se' : 'Já possui conta? Faça Login' }}
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- MODAL: EDIT PROFILE (ALTERAR DADOS E IMAGEM) -->
-    <div v-if="activeModal === 'editProfile' && user" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-      <div class="bg-nile-card border border-nile-border rounded-3xl w-full max-w-md p-6 shadow-2xl relative space-y-4">
-        <button @click="closeModal" class="absolute right-5 top-5 text-slate-400 hover:text-white text-lg">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-
-        <div class="text-center space-y-1">
-          <h3 class="text-xl font-black text-white">Editar Perfil</h3>
-          <p class="text-xs text-slate-400">{{ user.email }}</p>
-        </div>
-
-        <form @submit.prevent="saveProfileChanges" class="space-y-4 text-xs pt-1">
-          <!-- Avatar Preview & Upload -->
-          <div class="flex flex-col items-center space-y-3">
-            <div class="relative group">
-              <img 
-                v-if="profileForm.avatarPreview || profileForm.avatarUrl" 
-                :src="profileForm.avatarPreview || profileForm.avatarUrl" 
-                alt="Avatar" 
-                class="w-24 h-24 rounded-full object-cover border-2 border-nile-yellow shadow-xl"
-              />
-              <div v-else class="w-24 h-24 rounded-full bg-gradient-to-tr from-nile-yellow to-nile-blue flex items-center justify-center font-black text-nile-darkBg text-2xl uppercase shadow-xl">
-                {{ profileForm.displayName ? profileForm.displayName.substring(0, 2) : 'NL' }}
-              </div>
-
-              <label class="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-nile-blue hover:bg-nile-blueHover text-nile-darkBg flex items-center justify-center cursor-pointer shadow-lg transition" title="Escolher foto do computador">
-                <i class="fa-solid fa-camera text-xs"></i>
-                <input type="file" accept="image/*" @change="handleAvatarFileChange" class="hidden" />
-              </label>
-            </div>
-            <span class="text-[11px] text-slate-400">Clique no ícone da câmera para enviar uma foto</span>
-          </div>
-
-          <div>
-            <label class="block text-slate-400 mb-1 font-semibold">Nome de Exibição *</label>
-            <input 
-              v-model="profileForm.displayName" 
-              type="text" 
-              required
-              placeholder="Como você quer ser chamado" 
-              class="w-full bg-nile-darkBg border border-nile-border rounded-xl px-3.5 py-2.5 text-slate-100 focus:outline-none focus:border-nile-yellow"
-            />
-          </div>
-
-          <div>
-            <label class="block text-slate-400 mb-1 font-semibold">Bio / Status Musical</label>
-            <input 
-              v-model="profileForm.bio" 
-              type="text" 
-              maxlength="80"
-              placeholder="Ex: Ouvindo lo-fi e eletrônica" 
-              class="w-full bg-nile-darkBg border border-nile-border rounded-xl px-3.5 py-2.5 text-slate-100 focus:outline-none focus:border-nile-yellow"
-            />
-          </div>
-
-          <div>
-            <label class="block text-slate-400 mb-1 font-semibold">Ou cole o link de uma imagem (Opcional)</label>
-            <input 
-              v-model="profileForm.avatarUrl" 
-              type="url" 
-              placeholder="https://exemplo.com/minha-foto.jpg" 
-              class="w-full bg-nile-darkBg border border-nile-border rounded-xl px-3.5 py-2.5 text-slate-100 focus:outline-none focus:border-nile-blue"
-            />
-          </div>
-
-          <div class="pt-2 flex items-center justify-between">
-            <button 
-              type="button" 
-              @click="logoutUser(); closeModal();" 
-              class="text-rose-400 hover:underline font-semibold"
-            >
-              Sair da conta
-            </button>
-
-            <div class="flex space-x-2">
-              <button type="button" @click="closeModal" class="px-4 py-2 text-slate-400 hover:text-white font-semibold">Cancelar</button>
-              <button 
-                type="submit" 
-                :disabled="profileSaving"
-                class="px-5 py-2.5 bg-nile-yellow hover:bg-nile-yellowHover disabled:opacity-60 text-nile-darkBg font-black rounded-xl uppercase tracking-wider shadow-lg flex items-center space-x-2"
-              >
-                <i v-if="profileSaving" class="fa-solid fa-circle-notch fa-spin"></i>
-                <span>Salvar Perfil</span>
-              </button>
-            </div>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- MODAL: CREATE PLAYLIST -->
-    <div v-if="activeModal === 'createPlaylist'" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-      <div class="bg-nile-card border border-nile-border rounded-3xl w-full max-w-md p-6 shadow-2xl relative space-y-4">
-        <button @click="closeModal" class="absolute right-5 top-5 text-slate-400 hover:text-white text-lg">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-
-        <h3 class="text-lg font-black text-white">Criar Nova Playlist</h3>
-
-        <form @submit.prevent="createPlaylist" class="space-y-3 text-xs">
-          <div>
-            <label class="block text-slate-400 mb-1 font-semibold">Nome da Playlist *</label>
-            <input 
-              v-model="newPlaylistForm.name" 
-              type="text" 
-              required
-              placeholder="Ex: Vibe Noturna" 
-              class="w-full bg-nile-darkBg border border-nile-border rounded-xl px-3 py-2.5 text-slate-100 focus:outline-none focus:border-nile-yellow"
-            />
-          </div>
-
-          <div>
-            <label class="block text-slate-400 mb-1 font-semibold">Descrição (Opcional)</label>
-            <input 
-              v-model="newPlaylistForm.description" 
-              type="text" 
-              placeholder="Descreva o clima desta playlist" 
-              class="w-full bg-nile-darkBg border border-nile-border rounded-xl px-3 py-2.5 text-slate-100 focus:outline-none focus:border-nile-yellow"
-            />
-          </div>
-
-          <div class="pt-2 flex justify-end space-x-3">
-            <button type="button" @click="closeModal" class="px-4 py-2 text-slate-400 hover:text-white font-semibold">Cancelar</button>
-            <button type="submit" class="px-6 py-2.5 bg-nile-yellow hover:bg-nile-yellowHover text-nile-darkBg font-black rounded-xl uppercase tracking-wider shadow-lg shadow-nile-yellow/20">
-              Criar Playlist
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- MODAL: ADD TO PLAYLIST -->
-    <div v-if="activeModal === 'addToPlaylist' && selectedTrackForPlaylist" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-      <div class="bg-nile-card border border-nile-border rounded-3xl w-full max-w-sm p-6 shadow-2xl relative space-y-4">
-        <button @click="closeModal" class="absolute right-5 top-5 text-slate-400 hover:text-white text-lg">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-
-        <h3 class="text-base font-bold text-white">Adicionar à Playlist</h3>
-        <p class="text-xs text-slate-400">Escolha a playlist para "{{ selectedTrackForPlaylist.title }}"</p>
-
-        <div class="space-y-2 max-h-60 overflow-y-auto pr-1">
-          <div 
-            v-for="p in playlists" 
-            :key="'add-to-' + p.id"
-            @click="addTrackToPlaylist(p.id, selectedTrackForPlaylist)"
-            class="p-3 bg-nile-darkBg hover:bg-nile-hover rounded-xl border border-nile-border cursor-pointer flex items-center justify-between transition"
-          >
-            <span class="font-bold text-xs text-white">{{ p.name }}</span>
-            <span class="text-[10px] text-nile-blue">{{ p.tracks.length }} músicas</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- TOAST NOTIFICATIONS -->
-    <div class="fixed bottom-28 right-6 z-50 pointer-events-none flex flex-col space-y-2">
-      <transition-group name="toast">
-        <div 
-          v-for="t in toasts" 
-          :key="t.id"
-          class="pointer-events-auto bg-nile-card border border-nile-yellow/40 text-white text-xs px-4 py-3 rounded-2xl shadow-2xl flex items-center space-x-3"
-        >
-          <i class="fa-solid fa-circle-check text-nile-yellow text-sm"></i>
-          <span>{{ t.message }}</span>
-        </div>
-      </transition-group>
-    </div>
-
-  </div>
-
-  <!-- Arquivo JavaScript Separado -->
-  <script src="app.js"></script>
-</body>
-</html>
+                  :key="
