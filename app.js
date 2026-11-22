@@ -1309,7 +1309,6 @@ createApp({
       if (!this.user) return false;
 
       if (supabaseClient) {
-        // Garante que existe uma sessão autenticada ativa antes de gravar no banco
         const { data: sessionData } = await supabaseClient.auth.getSession();
         const activeSession = sessionData && sessionData.session;
         if (!activeSession || !activeSession.user) {
