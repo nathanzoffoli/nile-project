@@ -1,7 +1,6 @@
 // =========================================================================
 // CONFIGURAÇÃO DO SERVIDOR (COLE SUAS CHAVES DO SUPABASE ABAIXO)
 // =========================================================================
-
 const RAW_SUPABASE_URL = 'https://yqyytdvhcxfjkugjerme.supabase.co/rest/v1/';
 const RAW_SUPABASE_ANON_KEY = 'sb_publishable_FZSVXEBEqr27PzRGq8ElSg_S4pfjPxD';
 const CATALOG_JSON_URL = './musicas.json';
@@ -145,6 +144,9 @@ createApp({
       isMuted: false,
       isShuffle: false,
       isRepeat: false,
+      playQueue: [],
+      originalQueue: [],
+      queueDrawerOpen: false,
 
       // Coleções de Conteúdo
       catalogTracks: [],
@@ -224,6 +226,29 @@ createApp({
         }
         map.get(key).tracks.push(track);
       });
+      return Array.from(map.values());
+    },
+
+    artistAlbums() {
+      if (!this.artistData || !Array.isArray(this.artistData.tracks)) return [];
+      const map = new Map();
+
+      this.artistData.tracks.forEach(track => {
+        const albumName = track.album || 'Single';
+        const key = albumName.toLowerCase();
+
+        if (!map.has(key)) {
+          map.set(key, {
+            name: albumName,
+            artist: this.artistData.name,
+            cover: track.cover,
+            genre: track.genre || this.artistData.genre || 'Música',
+            tracks: []
+          });
+        }
+        map.get(key).tracks.push(track);
+      });
+
       return Array.from(map.values());
     },
 
@@ -348,11 +373,180 @@ createApp({
       this.sidebarOpen = false;
     },
 
-    // --- MOTOR DE ÁUDIO ---
-    playTrack(track) {
+    // --- GERENCIAMENTO DA FILA DE EXECUÇÃO ---
+    /**
+     * Ordena uma lista de músicas de acordo com o campo `id` (ordem natural/numérica).
+     */
+    sortTracksById(tracks) {
+      return (tracks || []).slice().sort((a, b) => {
+        const idA = String(a && a.id !== undefined ? a.id : '');
+        const idB = String(b && b.id !== undefined ? b.id : '');
+        return idA.localeCompare(idB, undefined, { numeric: true, sensitivity: 'base' });
+      });
+    },
+
+    /**
+     * Toca um álbum inteiro ordenando suas faixas conforme os IDs das músicas.
+     */
+    playAlbum(albumTracks) {
+      if (!albumTracks || albumTracks.length === 0) return;
+      const ordered = this.sortTracksById(albumTracks);
+      this.playTrack(ordered[0], ordered);
+    },
+
+    /**
+     * Embaralha uma lista usando o algoritmo Fisher-Yates.
+     */
+    shuffleArray(items) {
+      const arr = (items || []).slice();
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const temp = arr[i];
+        arr[i] = arr[j];
+        arr[j] = temp;
+      }
+      return arr;
+    },
+
+    /**
+     * Reorganiza aleatoriamente as músicas da fila de execução,
+     * mantendo a faixa atual na primeira posição.
+     */
+    applyShuffleToQueue(firstTrack = null) {
+      if (!Array.isArray(this.playQueue) || this.playQueue.length <= 1) return;
+
+      const anchorTrack = firstTrack || this.currentTrack;
+      if (anchorTrack && this.playQueue.some(t => t.id === anchorTrack.id)) {
+        const others = this.playQueue.filter(t => t.id !== anchorTrack.id);
+        let shuffledOthers = this.shuffleArray(others);
+
+        if (others.length > 1) {
+          const sameOrder = shuffledOthers.every((t, idx) => t.id === others[idx].id);
+          if (sameOrder) {
+            shuffledOthers = others.slice(1).concat(others[0]);
+          }
+        }
+
+        this.playQueue = [anchorTrack].concat(shuffledOthers);
+      } else {
+        const before = this.playQueue.slice();
+        let shuffled = this.shuffleArray(before);
+        if (before.length > 1 && shuffled.every((t, idx) => t.id === before[idx].id)) {
+          shuffled = before.slice(1).concat(before[0]);
+        }
+        this.playQueue = shuffled;
+      }
+    },
+
+    /**
+     * Alterna o modo aleatório e muda a ordem das músicas na fila de execução.
+     */
+    toggleShuffle() {
+      this.isShuffle = !this.isShuffle;
+
+      if (this.isShuffle) {
+        this.originalQueue = this.playQueue.slice();
+        this.applyShuffleToQueue(this.currentTrack);
+        this.showToast('Modo aleatório ativado: fila de execução embaralhada.');
+      } else {
+        if (this.originalQueue.length > 0) {
+          const activeIds = new Set(this.playQueue.map(t => t.id));
+          const restored = this.originalQueue.filter(t => activeIds.has(t.id));
+          const extras = this.playQueue.filter(
+            t => !restored.some(r => r.id === t.id)
+          );
+          this.playQueue = restored.concat(extras);
+          this.originalQueue = [];
+        }
+        this.showToast('Modo aleatório desativado: ordem original restaurada.');
+      }
+    },
+
+    /**
+     * Adiciona uma música individual ao final da fila de execução.
+     */
+    addToQueue(track) {
       if (!track || !track.url) {
         this.showToast('Prévia de áudio indisponível para esta faixa.', 'error');
         return;
+      }
+
+      if (this.currentTrack && !this.playQueue.some(t => t.id === this.currentTrack.id)) {
+        this.playQueue.unshift(this.currentTrack);
+      }
+
+      if (this.currentTrack && this.currentTrack.id === track.id) {
+        this.showToast('Esta música já está tocando agora.');
+        return;
+      }
+
+      if (this.playQueue.some(t => t.id === track.id)) {
+        this.showToast('"' + track.title + '" já está na fila de execução.');
+        return;
+      }
+
+      this.playQueue.push(track);
+      if (this.isShuffle) {
+        this.originalQueue.push(track);
+      }
+
+      if (!this.currentTrack) {
+        this.playTrack(track, null, true);
+      }
+
+      this.showToast('"' + track.title + '" adicionada à fila de execução!');
+    },
+
+    /**
+     * Toca uma faixa diretamente a partir da fila sem sobrescrever a fila atual.
+     */
+    playFromQueue(track) {
+      this.playTrack(track, null, true);
+    },
+
+    /**
+     * Remove uma faixa específica da fila de execução pelo índice.
+     */
+    removeFromQueue(index) {
+      if (index < 0 || index >= this.playQueue.length) return;
+      const removed = this.playQueue.splice(index, 1)[0];
+      if (removed) {
+        if (this.originalQueue.length > 0) {
+          this.originalQueue = this.originalQueue.filter(t => t.id !== removed.id);
+        }
+        this.showToast('"' + removed.title + '" removida da fila.');
+      }
+    },
+
+    /**
+     * Limpa a fila de execução, mantendo apenas a faixa em reprodução (se houver).
+     */
+    clearQueue() {
+      this.playQueue = this.currentTrack ? [this.currentTrack] : [];
+      this.originalQueue = this.playQueue.slice();
+      this.showToast('Fila de execução limpa.');
+    },
+
+    // --- MOTOR DE ÁUDIO ---
+    playTrack(track, contextTracks = null, keepQueue = false) {
+      if (!track || !track.url) {
+        this.showToast('Prévia de áudio indisponível para esta faixa.', 'error');
+        return;
+      }
+
+      if (Array.isArray(contextTracks) && contextTracks.length > 0) {
+        const ordered = this.sortTracksById(contextTracks);
+        this.originalQueue = ordered.slice();
+        this.playQueue = ordered;
+        if (this.isShuffle) {
+          this.applyShuffleToQueue(track);
+        }
+      } else if (!keepQueue) {
+        const existsInQueue = this.playQueue.some(t => t.id === track.id);
+        if (!existsInQueue) {
+          this.playQueue = [track];
+          this.originalQueue = [track];
+        }
       }
 
       if (this.currentTrack && this.currentTrack.id === track.id) {
@@ -376,13 +570,39 @@ createApp({
 
     playTrackList(list) {
       if (!list || list.length === 0) return;
-      this.playTrack(list[0]);
+      this.originalQueue = list.slice();
+      this.playQueue = list.slice();
+      if (this.isShuffle) {
+        this.applyShuffleToQueue();
+      }
+      this.playTrack(this.playQueue[0], null, true);
+    },
+
+    playRandomTrack() {
+      if (!this.catalogTracks || this.catalogTracks.length === 0) {
+        this.showToast('Nenhuma música disponível no catálogo.', 'error');
+        return;
+      }
+
+      let pool = this.catalogTracks;
+      if (this.currentTrack && this.catalogTracks.length > 1) {
+        pool = this.catalogTracks.filter(t => t.id !== this.currentTrack.id);
+      }
+
+      const randomIndex = Math.floor(Math.random() * pool.length);
+      const chosen = pool[randomIndex];
+      this.playTrack(chosen);
+      this.showToast('Explorando: "' + chosen.title + '" — ' + chosen.artist);
     },
 
     togglePlay() {
       const player = this.$refs.audioRef;
       if (!this.currentTrack) {
-        if (this.catalogTracks.length > 0) this.playTrack(this.catalogTracks[0]);
+        if (this.playQueue.length > 0) {
+          this.playTrack(this.playQueue[0], null, true);
+        } else if (this.catalogTracks.length > 0) {
+          this.playTrack(this.catalogTracks[0]);
+        }
         return;
       }
 
@@ -399,26 +619,28 @@ createApp({
     },
 
     prevTrack() {
-      if (!this.currentTrack || this.catalogTracks.length === 0) return;
-      const currentList = this.searchResults.length > 0 ? this.searchResults : this.catalogTracks;
-      const idx = currentList.findIndex(t => t.id === this.currentTrack.id);
-      const prevIdx = (idx - 1 + currentList.length) % currentList.length;
-      this.playTrack(currentList[prevIdx]);
-    },
+      if (!this.currentTrack) return;
+      const queue = this.playQueue.length > 0 ? this.playQueue : this.catalogTracks;
+      if (queue.length === 0) return;
 
-    nextTrack() {
-      if (!this.currentTrack || this.catalogTracks.length === 0) return;
-      const currentList = this.searchResults.length > 0 ? this.searchResults : this.catalogTracks;
-
-      if (this.isShuffle) {
-        const rand = Math.floor(Math.random() * currentList.length);
-        this.playTrack(currentList[rand]);
+      if (this.currentTime > 3) {
+        this.seekAudio(0);
         return;
       }
 
-      const idx = currentList.findIndex(t => t.id === this.currentTrack.id);
-      const nextIdx = (idx + 1) % currentList.length;
-      this.playTrack(currentList[nextIdx]);
+      const idx = queue.findIndex(t => t.id === this.currentTrack.id);
+      const prevIdx = idx === -1 ? 0 : (idx - 1 + queue.length) % queue.length;
+      this.playTrack(queue[prevIdx], null, true);
+    },
+
+    nextTrack() {
+      if (!this.currentTrack) return;
+      const queue = this.playQueue.length > 0 ? this.playQueue : this.catalogTracks;
+      if (queue.length === 0) return;
+
+      const idx = queue.findIndex(t => t.id === this.currentTrack.id);
+      const nextIdx = idx === -1 ? 0 : (idx + 1) % queue.length;
+      this.playTrack(queue[nextIdx], null, true);
     },
 
     onTrackEnded() {
@@ -923,6 +1145,7 @@ createApp({
       this.playlists = [
         { id: 'pl-1', name: 'Favoritas do Nilo', description: 'Seleção suave para relaxar', tracks: [] }
       ];
+      this.closeModal();
       this.showToast('Sua sessão foi encerrada.');
     },
 
