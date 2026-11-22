@@ -14,10 +14,10 @@
         extend: {
           colors: {
             nile: {
-              yellow: '#FDE047',      /* Amarelo suave (Cor Principal) */
-              yellowHover: '#FEF08A', /* Amarelo suave hover */
-              blue: '#7DD3FC',        /* Azul suave (Cor Secundária) */
-              blueHover: '#BAE6FD',   /* Azul suave hover */
+              yellow: '#FDE047',
+              yellowHover: '#FEF08A',
+              blue: '#7DD3FC',
+              blueHover: '#BAE6FD',
               darkBg: '#090B10',
               surface: '#11141D',
               card: '#171B26',
@@ -40,12 +40,10 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
   <!-- Arquivo CSS Separado -->
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css?v=3" />
 
-  <!-- Vue 3 CDN -->
-  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-
-  <!-- Supabase JS CDN -->
+  <!-- Vue 3 CDN & Supabase JS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-nile-darkBg text-slate-100 font-sans h-[100dvh] overflow-hidden antialiased select-none">
@@ -164,7 +162,7 @@
           </button>
         </div>
 
-        <!-- Cartão de Perfil (Exibido apenas quando o usuário já está logado) -->
+        <!-- Cartão de Perfil -->
         <div v-if="user" class="p-3 border-t border-nile-border bg-nile-darkBg/60">
           <div class="flex items-center justify-between gap-2">
             <div @click="openEditProfile" class="flex items-center space-x-3 min-w-0 cursor-pointer group flex-1">
@@ -197,7 +195,7 @@
       <!-- ÁREA CENTRAL DE CONTEÚDO -->
       <main class="flex-1 flex flex-col h-full min-w-0 overflow-hidden bg-nile-darkBg relative">
         
-        <!-- Cabeçalho Superior Fixo (Contém botões de Voltar/Avançar, Busca e o único botão de Entrar) -->
+        <!-- Cabeçalho Superior Fixo -->
         <header class="h-16 border-b border-nile-border/60 px-3 sm:px-6 flex items-center justify-between gap-2 sm:gap-4 z-10 bg-nile-darkBg/90 backdrop-blur-md sticky top-0 shrink-0">
           <div class="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
             <button @click="sidebarOpen = !sidebarOpen" class="md:hidden text-slate-300 hover:text-white p-2 shrink-0" aria-label="Abrir Menu">
@@ -235,7 +233,7 @@
               <input 
                 v-model="searchQuery"
                 @input="searchCatalog"
-                @focus="if (currentView !== 'search') navigate('search')"
+                @focus="currentView !== 'search' && navigate('search')"
                 type="text" 
                 placeholder="Buscar artista, álbum ou música..." 
                 class="w-full bg-nile-card border border-nile-border rounded-full pl-9 sm:pl-10 pr-8 sm:pr-10 py-2 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-nile-yellow transition"
@@ -250,7 +248,7 @@
             </div>
           </div>
 
-          <!-- Atalhos do Canto Superior Direito (Apenas 1 botão de Login) -->
+          <!-- Atalhos do Canto Superior Direito -->
           <div class="flex items-center space-x-2 sm:space-x-3 shrink-0">
             <button 
               @click="handleOpenCreatePlaylist" 
@@ -261,7 +259,6 @@
               <span class="hidden lg:inline">Nova Playlist</span>
             </button>
 
-            <!-- Único Botão Original de Login / Conta -->
             <button 
               @click="user ? openEditProfile() : openAuthModal()"
               class="flex items-center space-x-2 bg-nile-card px-2.5 sm:px-3.5 py-1.5 rounded-full border border-nile-border hover:border-nile-blue transition max-w-[140px] sm:max-w-[220px] md:max-w-xs"
@@ -339,7 +336,6 @@
                     <p class="text-[11px] text-slate-500 truncate">{{ track.album }}</p>
                   </div>
 
-                  <!-- Botão de Adicionar à Fila de Execução -->
                   <button 
                     @click.stop="addToQueue(track)"
                     class="p-2 text-slate-400 hover:text-nile-blue transition shrink-0"
@@ -348,7 +344,6 @@
                     <i class="fa-solid fa-list-ul"></i>
                   </button>
 
-                  <!-- Botão de Curtir (Permanece visível antes e depois do login) -->
                   <button 
                     @click.stop="toggleLikeTrack(track)"
                     class="p-2 text-slate-400 hover:text-nile-yellow transition shrink-0"
@@ -389,7 +384,7 @@
 
           </div>
 
-          <!-- TELA 2: BUSCA UNIFICADA (SOMENTE ARTISTAS EM ORDEM ALFABÉTICA AO ABRIR; PADRÃO COMPLETO AO PESQUISAR) -->
+          <!-- TELA 2: BUSCA UNIFICADA -->
           <div v-if="currentView === 'search'" class="space-y-6 animate-fadeIn">
             <div>
               <h2 class="text-2xl sm:text-3xl font-black mb-1">Buscar no Catálogo</h2>
@@ -398,7 +393,7 @@
               </p>
             </div>
 
-            <!-- EXIBIÇÃO AO CLICAR EM BUSCAR CATÁLOGO (SEM PESQUISA): SOMENTE ARTISTAS EM ORDEM ALFABÉTICA -->
+            <!-- SEM PESQUISA: SOMENTE ARTISTAS EM ORDEM ALFABÉTICA -->
             <div v-if="!(searchQuery || '').trim()" class="space-y-3">
               <div class="flex items-center justify-between">
                 <h3 class="text-lg sm:text-xl font-black flex items-center space-x-2">
@@ -428,9 +423,8 @@
               </div>
             </div>
 
-            <!-- EXIBIÇÃO QUANDO HÁ PESQUISA DIGITADA: MANTÉM O PADRÃO COMPLETO -->
+            <!-- COM PESQUISA DIGITADA: PADRÃO COMPLETO -->
             <template v-else>
-              <!-- Filtros de Categoria -->
               <div class="flex items-center gap-2 overflow-x-auto pb-1">
                 <button 
                   @click="searchFilterTab = 'all'"
@@ -462,7 +456,6 @@
                 </button>
               </div>
 
-              <!-- Estado Vazio -->
               <div v-if="matchedArtists.length === 0 && matchedAlbums.length === 0 && searchResults.length === 0" class="p-12 sm:p-16 text-center bg-nile-card rounded-2xl border border-nile-border text-slate-500">
                 <i class="fa-solid fa-magnifying-glass text-4xl mb-3 text-slate-600 block"></i>
                 <p class="text-sm font-semibold">Nenhum artista, álbum ou música encontrado para "{{ searchQuery }}".</p>
@@ -676,7 +669,7 @@
             </div>
           </div>
 
-          <!-- TELA 4: PÁGINA DO ARTISTA (SOMENTE ÁLBUNS; AS MÚSICAS APARECEM AO CLICAR NO ÁLBUM) -->
+          <!-- TELA 4: PÁGINA DO ARTISTA (SOMENTE ÁLBUNS) -->
           <div v-if="currentView === 'artist' && artistData" class="space-y-6 sm:space-y-8 animate-fadeIn">
             <div class="relative rounded-2xl sm:rounded-3xl bg-gradient-to-r from-sky-950/80 via-nile-card to-amber-950/40 p-5 sm:p-8 border border-nile-border overflow-hidden">
               <div class="flex flex-col sm:flex-row items-center sm:items-end space-y-5 sm:space-y-0 sm:space-x-8 relative z-10">
@@ -963,10 +956,9 @@
 
         </div>
 
-        <!-- PLAYER DE ÁUDIO FIXO NA BASE (RESPONSIVO MOBILE E DESKTOP) -->
+        <!-- PLAYER DE ÁUDIO FIXO NA BASE -->
         <footer class="fixed bottom-0 left-0 right-0 glass-player border-t border-nile-border px-3 py-2.5 md:py-0 md:px-6 md:h-24 flex flex-col md:flex-row items-center justify-between gap-2 md:gap-4 z-40">
           
-          <!-- Informações da Faixa + Botão de Like + Controles Compactos Mobile -->
           <div class="flex items-center justify-between md:justify-start w-full md:w-[30%] md:min-w-[220px] gap-2 md:gap-3">
             <div class="flex items-center space-x-3 min-w-0 flex-1 md:flex-initial md:max-w-[calc(100%-44px)]">
               <template v-if="currentTrack">
@@ -996,7 +988,6 @@
               </template>
             </div>
 
-            <!-- Coração de Like no Player + Controles Mobile + Botão Fila Mobile -->
             <div class="flex items-center space-x-1 shrink-0">
               <button 
                 v-if="currentTrack" 
@@ -1036,7 +1027,6 @@
             </div>
           </div>
 
-          <!-- Centro: Controles de Reprodução Desktop & Barra de Progresso -->
           <div class="flex flex-col items-center justify-center w-full md:flex-1 md:max-w-2xl space-y-1 md:space-y-1.5">
             <div class="hidden md:flex items-center space-x-5">
               <button @click="toggleShuffle" :class="isShuffle ? 'text-nile-blue' : 'text-slate-400 hover:text-white'" class="text-xs p-1" title="Aleatorizar fila de execução">
@@ -1077,7 +1067,6 @@
             </div>
           </div>
 
-          <!-- Direita: Fila de Execução + Controle de Volume (Desktop) -->
           <div class="hidden md:flex items-center justify-end space-x-3 w-[30%] min-w-[180px]">
             <button 
               @click="queueDrawerOpen = !queueDrawerOpen"
@@ -1155,7 +1144,6 @@
       </div>
 
       <div class="flex-1 overflow-y-auto p-4 space-y-4">
-        <!-- Tocando Agora -->
         <div v-if="currentTrack" class="space-y-2">
           <span class="text-[10px] font-bold uppercase tracking-widest text-nile-yellow">Tocando agora</span>
           <div class="flex items-center space-x-3 p-3 rounded-2xl bg-nile-card border border-nile-yellow/30">
@@ -1169,7 +1157,6 @@
           </div>
         </div>
 
-        <!-- Lista da Fila -->
         <div class="space-y-2">
           <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Ordem da fila</span>
 
@@ -1235,7 +1222,6 @@
           </div>
           <h3 class="text-xl font-black text-white">Sua Conta Nile</h3>
           
-          <!-- Mensagem contextual quando aberta ao clicar no Like/Favoritar -->
           <div v-if="authPromptMessage" class="mt-2 p-2.5 rounded-xl bg-nile-yellow/10 border border-nile-yellow/30 text-nile-yellow text-xs font-medium">
             <i class="fa-solid fa-heart mr-1.5"></i>{{ authPromptMessage }}
           </div>
@@ -1473,7 +1459,27 @@
 
   </div>
 
+  <script>
+    window.__NILE_LAST_ERROR__ = '';
+    window.addEventListener('error', function (ev) {
+      window.__NILE_LAST_ERROR__ = ev && ev.message ? ev.message : 'Erro desconhecido no JavaScript';
+    });
+  </script>
+
   <!-- Arquivo JavaScript Separado -->
-  <script src="app.js"></script>
+  <script src="app.js?v=3"></script>
+
+  <script>
+    setTimeout(function () {
+      if (!window.__NILE_MOUNTED__) {
+        var box = document.createElement('div');
+        box.style.cssText = 'position:fixed;inset:16px;z-index:99999;background:#171B26;color:#fff;border:2px solid #f43f5e;border-radius:16px;padding:24px;font-family:sans-serif;max-width:520px;margin:auto;height:fit-content;';
+        box.innerHTML = '<h2 style="color:#fda4af;font-size:18px;font-weight:800;margin:0 0 8px;">O aplicativo Nile não iniciou</h2>' +
+          '<p style="font-size:13px;color:#cbd5e1;margin:0 0 10px;">Verifique se o arquivo <b>app.js</b> está na mesma pasta do <b>index.html</b> e se não há aspas faltando nas chaves do Supabase.</p>' +
+          (window.__NILE_LAST_ERROR__ ? '<pre style="background:#090B10;padding:10px;border-radius:8px;font-size:12px;color:#fde047;white-space:pre-wrap;">' + window.__NILE_LAST_ERROR__ + '</pre>' : '');
+        document.body.appendChild(box);
+      }
+    }, 1500);
+  </script>
 </body>
 </html>
