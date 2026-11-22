@@ -93,7 +93,6 @@ createApp({
       user: null,
       authMode: 'login',
       authLoading: false,
-      authPromptMessage: '',
       authForm: { displayName: '', email: '', password: '' },
 
       // Profile Edit State
@@ -125,13 +124,11 @@ createApp({
         { id: 'pl-1', name: 'Favoritas do Nilo', description: 'Seleção suave para relaxar', tracks: [] }
       ],
 
-      // Artist & Album Page Data
+      // Artist Page Data
       artistData: null,
-      albumData: null,
 
-      // Search Query & Filter Tab
+      // Search Query
       searchQuery: '',
-      searchFilterTab: 'all',
 
       // Modals
       activeModal: null,
@@ -160,7 +157,6 @@ createApp({
     activePlaylist() {
       return (this.playlists || []).find(p => p.id === this.activePlaylistId) || null;
     },
-
     popularArtists() {
       const map = new Map();
       (this.catalogTracks || []).forEach(track => {
@@ -173,62 +169,6 @@ createApp({
         }
       });
       return Array.from(map.values());
-    },
-
-    catalogAlbums() {
-      const map = new Map();
-      (this.catalogTracks || []).forEach(track => {
-        const albumName = track.album || 'Single';
-        const artistName = track.artist || 'Artista Desconhecido';
-        const key = `${albumName.toLowerCase()}__${artistName.toLowerCase()}`;
-
-        if (!map.has(key)) {
-          map.set(key, {
-            name: albumName,
-            artist: artistName,
-            cover: track.cover,
-            genre: track.genre || 'Música',
-            tracks: []
-          });
-        }
-        map.get(key).tracks.push(track);
-      });
-      return Array.from(map.values());
-    },
-
-    matchedArtists() {
-      const q = (this.searchQuery || '').trim().toLowerCase();
-      if (!q) return this.popularArtists;
-
-      return this.popularArtists.filter(artist => {
-        const directMatch =
-          (artist.name && artist.name.toLowerCase().includes(q)) ||
-          (artist.genre && artist.genre.toLowerCase().includes(q));
-
-        const hasMatchingTrack = this.searchResults.some(
-          t => t.artist && t.artist.toLowerCase() === artist.name.toLowerCase()
-        );
-
-        return directMatch || hasMatchingTrack;
-      });
-    },
-
-    matchedAlbums() {
-      const q = (this.searchQuery || '').trim().toLowerCase();
-      if (!q) return this.catalogAlbums;
-
-      return this.catalogAlbums.filter(album => {
-        const directMatch =
-          (album.name && album.name.toLowerCase().includes(q)) ||
-          (album.artist && album.artist.toLowerCase().includes(q)) ||
-          (album.genre && album.genre.toLowerCase().includes(q));
-
-        const hasMatchingTrack = album.tracks.some(
-          t => t.title && t.title.toLowerCase().includes(q)
-        );
-
-        return directMatch || hasMatchingTrack;
-      });
     }
   },
 
@@ -293,22 +233,6 @@ createApp({
 
       this.currentView = 'artist';
       this.sidebarOpen = false;
-    },
-
-    openAlbumPage(album) {
-      this.albumData = album;
-      this.currentView = 'album';
-      this.sidebarOpen = false;
-    },
-
-    openAlbumByName(albumName, artistName) {
-      const found = this.catalogAlbums.find(
-        a => a.name.toLowerCase() === (albumName || '').toLowerCase() &&
-             a.artist.toLowerCase() === (artistName || '').toLowerCase()
-      );
-      if (found) {
-        this.openAlbumPage(found);
-      }
     },
 
     openPlaylist(p) {
@@ -447,52 +371,29 @@ createApp({
       return `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
     },
 
-    // --- BLOQUEIO DE LOGIN PARA SALVAR FAVORITOS / PLAYLISTS ---
-    requireAuth(message) {
-      if (this.user) return true;
-      this.openAuthModal(message || 'Faça login ou crie uma conta para salvar suas músicas favoritas!');
-      return false;
-    },
-
-    openAuthModal(message = '') {
-      this.authPromptMessage = message;
-      this.authMode = 'login';
-      this.openModal('auth');
-    },
-
     // --- LIKED TRACKS ---
     isTrackLiked(trackId) {
-      if (!this.user) return false;
       return this.likedTracks.some(t => t.id === trackId);
     },
 
     toggleLikeTrack(track) {
-      if (!this.requireAuth(`Faça login para salvar "${track.title}" nas suas músicas favoritas!`)) {
-        return;
-      }
-
       const idx = this.likedTracks.findIndex(t => t.id === track.id);
       if (idx > -1) {
         this.likedTracks.splice(idx, 1);
         this.showToast(`"${track.title}" removida dos favoritos.`);
       } else {
         this.likedTracks.push(track);
-        this.showToast(`"${track.title}" salva nos favoritos!`);
+        this.showToast(`"${track.title}" favoritada!`);
       }
       this.syncUserDataToCloud();
     },
 
     // --- FAVORITE ARTISTS ---
     isArtistFavorited(artistName) {
-      if (!this.user) return false;
       return this.favoriteArtists.some(a => a.name.toLowerCase() === artistName.toLowerCase());
     },
 
     toggleFavoriteArtist(artist) {
-      if (!this.requireAuth(`Faça login para favoritar "${artist.name}"!`)) {
-        return;
-      }
-
       const idx = this.favoriteArtists.findIndex(a => a.name.toLowerCase() === artist.name.toLowerCase());
       if (idx > -1) {
         this.favoriteArtists.splice(idx, 1);
@@ -505,15 +406,7 @@ createApp({
     },
 
     // --- PLAYLIST MANAGEMENT ---
-    handleOpenCreatePlaylist() {
-      if (!this.requireAuth('Faça login para criar suas próprias playlists!')) {
-        return;
-      }
-      this.openModal('createPlaylist');
-    },
-
     createPlaylist() {
-      if (!this.requireAuth('Faça login para criar uma playlist!')) return;
       if (!this.newPlaylistForm.name) return;
 
       const pl = {
@@ -531,9 +424,6 @@ createApp({
     },
 
     openAddToPlaylistModal(track) {
-      if (!this.requireAuth('Faça login para adicionar músicas às suas playlists!')) {
-        return;
-      }
       this.selectedTrackForPlaylist = track;
       this.openModal('addToPlaylist');
     },
@@ -568,9 +458,8 @@ createApp({
       this.syncUserDataToCloud();
     },
 
-    // =====================================================================
     // AUTENTICAÇÃO, PERFIL E SINCRONIZAÇÃO COM SUPABASE
-    // =====================================================================
+
     async restoreUserSession() {
       if (supabaseClient) {
         const { data } = await supabaseClient.auth.getSession();
@@ -655,7 +544,6 @@ createApp({
         }
 
         this.authForm = { displayName: '', email: '', password: '' };
-        this.authPromptMessage = '';
       } catch (err) {
         this.showToast('Erro: ' + (err.message || 'Falha na autenticação.'));
       } finally {
@@ -681,6 +569,7 @@ createApp({
           bio: profile.bio || ''
         };
 
+        // Reconstrói as músicas curtidas cruzando IDs com o catálogo
         const likedIds = Array.isArray(profile.liked_track_ids) ? profile.liked_track_ids : [];
         this.likedTracks = this.catalogTracks.filter(t => likedIds.includes(t.id));
 
@@ -791,6 +680,7 @@ createApp({
       try {
         let finalAvatarUrl = this.profileForm.avatarUrl;
 
+        // Se selecionou um arquivo de foto do computador
         if (this.profileForm.avatarFile) {
           if (supabaseClient) {
             const fileExt = this.profileForm.avatarFile.name.split('.').pop();
@@ -808,6 +698,7 @@ createApp({
 
             finalAvatarUrl = publicData.publicUrl;
           } else if (this.profileForm.avatarPreview) {
+            // Em modo local, salva a imagem em DataURL
             finalAvatarUrl = this.profileForm.avatarPreview;
           }
         }
@@ -849,7 +740,6 @@ createApp({
     closeModal() {
       this.activeModal = null;
       this.selectedTrackForPlaylist = null;
-      this.authPromptMessage = '';
     },
 
     showToast(message) {
