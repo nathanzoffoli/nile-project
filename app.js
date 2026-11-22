@@ -1,12 +1,42 @@
 // =========================================================================
 // CONFIGURAÇÃO DO SERVIDOR (COLE SUAS CHAVES DO SUPABASE ABAIXO)
 // =========================================================================
-const SUPABASE_URL = 'https://yqyytdvhcxfjkugjerme.supabase.co/rest/v1/';
-const SUPABASE_ANON_KEY = 'sb_publishable_FZSVXEBEqr27PzRGq8ElSg_S4pfjPxD';
+
+const RAW_SUPABASE_URL = 'https://yqyytdvhcxfjkugjerme.supabase.co/rest/v1/';
+const RAW_SUPABASE_ANON_KEY = 'sb_publishable_FZSVXEBEqr27PzRGq8ElSg_S4pfjPxD';
 const CATALOG_JSON_URL = './musicas.json';
 
+/**
+ * Normaliza a URL do Supabase para garantir que contenha apenas o domínio base
+ * (ex: https://seu-projeto.supabase.co), evitando o erro
+ * "invalid path specified in request url".
+ */
+function normalizeSupabaseUrl(rawUrl) {
+  const cleaned = (rawUrl || '').trim();
+  if (!cleaned || cleaned.indexOf('COLE_SUA') !== -1) return '';
+
+  // Caso tenha sido colada a URL do painel (https://supabase.com/dashboard/project/ID)
+  const dashboardMatch = cleaned.match(/supabase\.com\/dashboard\/project\/([a-z0-9]+)/i);
+  if (dashboardMatch && dashboardMatch[1]) {
+    return 'https://' + dashboardMatch[1] + '.supabase.co';
+  }
+
+  // Remove caminhos extras (/rest/v1, /storage/v1, /auth/v1, barras no final, etc.)
+  try {
+    const parsed = new URL(cleaned);
+    return parsed.origin;
+  } catch (e) {
+    return cleaned.replace(/\/+$/, '');
+  }
+}
+
+const SUPABASE_URL = normalizeSupabaseUrl(RAW_SUPABASE_URL);
+const SUPABASE_ANON_KEY = (RAW_SUPABASE_ANON_KEY || '').trim();
+
 const isSupabaseConfigured =
-  SUPABASE_URL.indexOf('http') === 0 &&
+  SUPABASE_URL.indexOf('https://') === 0 &&
+  SUPABASE_URL.indexOf('.supabase.co') !== -1 &&
+  SUPABASE_ANON_KEY.indexOf('COLE_SUA') === -1 &&
   SUPABASE_ANON_KEY.length > 20;
 
 let supabaseClient = null;
@@ -318,7 +348,7 @@ createApp({
       this.sidebarOpen = false;
     },
 
-    // --- AUDIO PLAYER ENGINE ---
+    // --- MOTOR DE ÁUDIO ---
     playTrack(track) {
       if (!track || !track.url) {
         this.showToast('Prévia de áudio indisponível para esta faixa.', 'error');
@@ -379,7 +409,7 @@ createApp({
     nextTrack() {
       if (!this.currentTrack || this.catalogTracks.length === 0) return;
       const currentList = this.searchResults.length > 0 ? this.searchResults : this.catalogTracks;
-      
+
       if (this.isShuffle) {
         const rand = Math.floor(Math.random() * currentList.length);
         this.playTrack(currentList[rand]);
@@ -487,7 +517,7 @@ createApp({
       }
     },
 
-    // --- LIKED TRACKS (BOTÃO DE CURTIR) ---
+    // --- MÚSICAS CURTIDAS (BOTÃO DE CURTIR) ---
     isTrackLiked(trackId) {
       if (!this.user) return false;
       return this.likedTracks.some(t => t.id === trackId);
@@ -512,7 +542,7 @@ createApp({
       this.syncUserDataToCloud();
     },
 
-    // --- FAVORITE ARTISTS ---
+    // --- ARTISTAS FAVORITOS ---
     isArtistFavorited(artistName) {
       if (!this.user) return false;
       return this.favoriteArtists.some(a => a.name.toLowerCase() === artistName.toLowerCase());
@@ -537,7 +567,7 @@ createApp({
       this.syncUserDataToCloud();
     },
 
-    // --- PLAYLIST MANAGEMENT ---
+    // --- GERENCIAMENTO DE PLAYLISTS ---
     handleOpenCreatePlaylist() {
       if (!this.requireAuth('Faça login para criar suas próprias playlists!', { type: 'createPlaylist' })) {
         return;
@@ -606,10 +636,14 @@ createApp({
     // =====================================================================
     async restoreUserSession() {
       if (supabaseClient) {
-        const res = await supabaseClient.auth.getSession();
-        const sessionUser = res && res.data && res.data.session && res.data.session.user;
-        if (sessionUser) {
-          await this.loadSupabaseProfile(sessionUser);
+        try {
+          const res = await supabaseClient.auth.getSession();
+          const sessionUser = res && res.data && res.data.session && res.data.session.user;
+          if (sessionUser) {
+            await this.loadSupabaseProfile(sessionUser);
+          }
+        } catch (err) {
+          console.warn('Falha ao restaurar sessão Supabase:', err);
         }
       } else {
         const savedEmail = localStorage.getItem('nile_active_email');
@@ -628,7 +662,7 @@ createApp({
           if (this.authMode === 'register') {
             const displayName = this.authForm.displayName || this.authForm.email.split('@')[0];
             const res = await supabaseClient.auth.signUp({
-              email: this.authForm.email,
+              email: this.authForm.email.trim(),
               password: this.authForm.password,
               options: { data: { display_name: displayName } }
             });
@@ -652,7 +686,7 @@ createApp({
             }
           } else {
             const res = await supabaseClient.auth.signInWithPassword({
-              email: this.authForm.email,
+              email: this.authForm.email.trim(),
               password: this.authForm.password
             });
 
@@ -667,7 +701,7 @@ createApp({
           }
         } else {
           // Fallback local caso as chaves do Supabase ainda não estejam preenchidas
-          const email = this.authForm.email.toLowerCase();
+          const email = this.authForm.email.trim().toLowerCase();
           const existing = localStorage.getItem('nile_profile_' + email);
 
           if (this.authMode === 'register' || !existing) {
@@ -694,7 +728,12 @@ createApp({
         this.authForm = { displayName: '', email: '', password: '' };
         this.authPromptMessage = '';
       } catch (err) {
-        this.showToast('Erro: ' + (err.message || 'Falha na autenticação.'), 'error');
+        const msg = err && err.message ? err.message : 'Falha na autenticação.';
+        if (msg.toLowerCase().indexOf('invalid path') !== -1) {
+          this.showToast('URL do Supabase inválida. Use apenas https://seu-projeto.supabase.co no app.js.', 'error');
+        } else {
+          this.showToast('Erro: ' + msg, 'error');
+        }
       } finally {
         this.authLoading = false;
       }
@@ -887,7 +926,7 @@ createApp({
       this.showToast('Sua sessão foi encerrada.');
     },
 
-    // --- UI HELPERS ---
+    // --- AUXILIARES DE INTERFACE ---
     closeModal() {
       this.activeModal = null;
       this.trackToAdd = null;
