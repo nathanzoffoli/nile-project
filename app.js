@@ -5,22 +5,15 @@ const RAW_SUPABASE_URL = 'https://yqyytdvhcxfjkugjerme.supabase.co/rest/v1/';
 const RAW_SUPABASE_ANON_KEY = 'sb_publishable_FZSVXEBEqr27PzRGq8ElSg_S4pfjPxD';
 const CATALOG_JSON_URL = './musicas.json';
 
-/**
- * Normaliza a URL do Supabase para garantir que contenha apenas o domínio base
- * (ex: https://seu-projeto.supabase.co), evitando o erro
- * "invalid path specified in request url".
- */
 function normalizeSupabaseUrl(rawUrl) {
   const cleaned = (rawUrl || '').trim();
   if (!cleaned || cleaned.indexOf('COLE_SUA') !== -1) return '';
 
-  // Caso tenha sido colada a URL do painel (https://supabase.com/dashboard/project/ID)
   const dashboardMatch = cleaned.match(/supabase\.com\/dashboard\/project\/([a-z0-9]+)/i);
   if (dashboardMatch && dashboardMatch[1]) {
     return 'https://' + dashboardMatch[1] + '.supabase.co';
   }
 
-  // Remove caminhos extras (/rest/v1, /storage/v1, /auth/v1, barras no final, etc.)
   try {
     const parsed = new URL(cleaned);
     return parsed.origin;
@@ -43,7 +36,6 @@ if (isSupabaseConfigured && window.supabase) {
   supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 }
 
-// Catálogo padrão de demonstração (usado caso musicas.json não esteja acessível)
 const FALLBACK_CATALOG = [
   {
     id: 'nile-1',
@@ -107,11 +99,6 @@ const FALLBACK_CATALOG = [
   }
 ];
 
-/**
- * Gera um identificador único e determinístico para cada música do catálogo,
- * evitando conflitos quando dois álbuns diferentes numeram suas faixas como "1", "2", etc.
- * Preserva o número original em `trackNumber` para ordenação do álbum.
- */
 function normalizeCatalogTracks(rawList) {
   const usedIds = new Set();
 
@@ -160,12 +147,10 @@ createApp({
       sidebarOpen: false,
       isLoading: false,
 
-      // Histórico de Navegação (Voltar / Avançar)
       navHistory: [],
       navIndex: -1,
       isNavigatingHistory: false,
 
-      // Estado de Usuário e Autenticação
       user: null,
       authMode: 'login',
       authLoading: false,
@@ -173,7 +158,6 @@ createApp({
       pendingAction: null,
       authForm: { displayName: '', email: '', password: '' },
 
-      // Estado de Edição de Perfil
       profileSaving: false,
       profileForm: {
         displayName: '',
@@ -183,7 +167,6 @@ createApp({
         avatarPreview: ''
       },
 
-      // Estado do Motor de Áudio
       currentTrack: null,
       isPlaying: false,
       currentTime: 0,
@@ -196,7 +179,6 @@ createApp({
       originalQueue: [],
       queueDrawerOpen: false,
 
-      // Coleções de Conteúdo
       catalogTracks: [],
       searchResults: [],
       likedTracks: [],
@@ -205,20 +187,16 @@ createApp({
         { id: 'pl-1', name: 'Favoritas do Nilo', description: 'Seleção suave para relaxar', tracks: [] }
       ],
 
-      // Páginas de Artista e Álbum
       artistData: null,
       albumData: null,
 
-      // Busca e Filtros
       searchQuery: '',
       searchFilterTab: 'all',
 
-      // Modais
       activeModal: null,
       trackToAdd: null,
       activePlaylistId: null,
 
-      // Formulários e Notificações
       newPlaylistForm: { name: '', description: '' },
       toast: { visible: false, message: '', type: 'success' },
       toastTimer: null
@@ -230,16 +208,10 @@ createApp({
       this.$refs.audioRef.volume = this.volume;
     }
 
-    // Registra a tela inicial no histórico
     this.recordHistory({ view: 'home' });
-
-    // 1. Carrega o catálogo de músicas (musicas.json)
     await this.loadServerCatalog();
-
-    // 2. Restaura sessão do usuário (Supabase ou LocalStorage)
     await this.restoreUserSession();
 
-    // 3. Mantém a sessão sincronizada caso o token seja renovado
     if (supabaseClient && supabaseClient.auth && supabaseClient.auth.onAuthStateChange) {
       supabaseClient.auth.onAuthStateChange(async (event, session) => {
         if (event === 'SIGNED_IN' && session && session.user && (!this.user || this.user.id !== session.user.id)) {
@@ -344,7 +316,6 @@ createApp({
   },
 
   methods: {
-    // --- HISTÓRICO DE NAVEGAÇÃO (VOLTAR E AVANÇAR) ---
     recordHistory(entry) {
       if (this.isNavigatingHistory) return;
 
@@ -438,7 +409,6 @@ createApp({
       });
     },
 
-    // --- CARREGAMENTO DO CATÁLOGO JSON ---
     async loadServerCatalog() {
       this.isLoading = true;
       try {
@@ -532,10 +502,6 @@ createApp({
       });
     },
 
-    // --- GERENCIAMENTO DA FILA DE EXECUÇÃO ---
-    /**
-     * Ordena uma lista de músicas de acordo com o número original da faixa (`trackNumber` ou `id`).
-     */
     sortTracksById(tracks) {
       return (tracks || []).slice().sort((a, b) => {
         const numA = String(a && a.trackNumber !== undefined ? a.trackNumber : (a && a.id !== undefined ? a.id : ''));
@@ -544,18 +510,12 @@ createApp({
       });
     },
 
-    /**
-     * Toca um álbum inteiro ordenando suas faixas conforme o número das faixas.
-     */
     playAlbum(albumTracks) {
       if (!albumTracks || albumTracks.length === 0) return;
       const ordered = this.sortTracksById(albumTracks);
       this.playTrack(ordered[0], ordered);
     },
 
-    /**
-     * Embaralha uma lista usando o algoritmo Fisher-Yates.
-     */
     shuffleArray(items) {
       const arr = (items || []).slice();
       for (let i = arr.length - 1; i > 0; i--) {
@@ -567,10 +527,6 @@ createApp({
       return arr;
     },
 
-    /**
-     * Reorganiza aleatoriamente as músicas da fila de execução,
-     * mantendo a faixa atual na primeira posição.
-     */
     applyShuffleToQueue(firstTrack = null) {
       if (!Array.isArray(this.playQueue) || this.playQueue.length <= 1) return;
 
@@ -671,7 +627,6 @@ createApp({
       this.showToast('Fila de execução limpa.');
     },
 
-    // --- MOTOR DE ÁUDIO ---
     playTrack(track, contextTracks = null, keepQueue = false) {
       if (!track || !track.url) {
         this.showToast('Prévia de áudio indisponível para esta faixa.', 'error');
@@ -844,7 +799,6 @@ createApp({
       return (mins < 10 ? '0' : '') + mins + ':' + (secs < 10 ? '0' : '') + secs;
     },
 
-    // --- VERIFICAÇÃO DE LOGIN E AÇÃO PENDENTE APÓS ENTRAR ---
     requireAuth(message, pendingAction) {
       if (this.user) return true;
       this.pendingAction = pendingAction || null;
@@ -887,7 +841,6 @@ createApp({
       }
     },
 
-    // --- MÚSICAS CURTIDAS (BOTÃO DE CURTIR) ---
     isTrackLiked(trackId) {
       if (!this.user || trackId === undefined || trackId === null) return false;
       const targetId = String(trackId);
@@ -919,7 +872,6 @@ createApp({
       }
     },
 
-    // --- ARTISTAS FAVORITOS ---
     isArtistFavorited(artistName) {
       if (!this.user) return false;
       return this.favoriteArtists.some(a => a.name.toLowerCase() === artistName.toLowerCase());
@@ -949,7 +901,6 @@ createApp({
       }
     },
 
-    // --- GERENCIAMENTO DE PLAYLISTS ---
     handleOpenCreatePlaylist() {
       if (!this.requireAuth('Faça login para criar suas próprias playlists!', { type: 'createPlaylist' })) {
         return;
@@ -1024,9 +975,6 @@ createApp({
       }
     },
 
-    // =====================================================================
-    // AUTENTICAÇÃO, PERFIL E SINCRONIZAÇÃO COM SUPABASE
-    // =====================================================================
     serializePlaylists() {
       return (this.playlists || []).map(pl => ({
         id: pl.id,
@@ -1374,7 +1322,6 @@ createApp({
       }
     },
 
-    // --- EDIÇÃO DE PERFIL E UPLOAD DE AVATAR ---
     openEditProfile() {
       if (!this.user) return;
       this.profileForm = {
@@ -1463,7 +1410,6 @@ createApp({
       this.showToast('Sua sessão foi encerrada.');
     },
 
-    // --- AUXILIARES DE INTERFACE ---
     closeModal() {
       this.activeModal = null;
       this.trackToAdd = null;
@@ -1483,3 +1429,5 @@ createApp({
     }
   }
 }).mount('#app');
+
+window.__NILE_MOUNTED__ = true;
