@@ -52,22 +52,22 @@
 
   <div id="app" class="flex flex-col h-[100dvh] overflow-hidden">
 
-    <!-- MAIN APP LAYOUT (Sidebar + Main View) -->
+    <!-- LAYOUT PRINCIPAL (Sidebar + Área de Conteúdo) -->
     <div class="flex flex-1 overflow-hidden relative pb-[104px] md:pb-24">
 
-      <!-- MOBILE SIDEBAR BACKDROP -->
+      <!-- FUNDO ESCURO DO MENU MOBILE -->
       <div 
         v-if="sidebarOpen" 
         @click="sidebarOpen = false" 
         class="fixed inset-0 bg-black/70 backdrop-blur-sm z-20 md:hidden transition-opacity"
       ></div>
       
-      <!-- SIDEBAR -->
+      <!-- BARRA LATERAL (SIDEBAR) -->
       <aside 
         class="w-64 max-w-[80vw] shrink-0 bg-nile-surface border-r border-nile-border flex flex-col z-30 transition-transform duration-300 md:translate-x-0 fixed md:relative inset-y-0 left-0 h-full"
         :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'"
       >
-        <!-- Logo Header -->
+        <!-- Cabeçalho da Logo -->
         <div class="p-5 sm:p-6 flex items-center justify-between">
           <div class="flex items-center space-x-3 cursor-pointer" @click="navigate('home')">
             <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-nile-yellow to-nile-blue flex items-center justify-center shadow-lg shadow-nile-yellow/20">
@@ -78,12 +78,12 @@
               <p class="text-[10px] text-nile-blue/80 font-semibold tracking-widest uppercase">Cloud Streaming</p>
             </div>
           </div>
-          <button @click="sidebarOpen = false" class="md:hidden text-slate-400 hover:text-white p-2">
+          <button @click="sidebarOpen = false" class="md:hidden text-slate-400 hover:text-white p-2" aria-label="Fechar Menu">
             <i class="fa-solid fa-xmark text-lg"></i>
           </button>
         </div>
 
-        <!-- Main Navigation Items -->
+        <!-- Menu Principal de Navegação -->
         <nav class="px-3 space-y-1">
           <button 
             @click="navigate('home')" 
@@ -135,7 +135,7 @@
 
         <div class="my-4 px-4 border-t border-nile-border/60"></div>
 
-        <!-- Playlists List -->
+        <!-- Cabeçalho da Lista de Playlists -->
         <div class="px-5 flex items-center justify-between mb-2">
           <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Playlists</span>
           <button 
@@ -147,6 +147,7 @@
           </button>
         </div>
 
+        <!-- Playlists do Usuário -->
         <div class="flex-1 overflow-y-auto px-3 space-y-1">
           <button 
             v-for="playlist in playlists" 
@@ -163,9 +164,9 @@
           </button>
         </div>
 
-        <!-- Auth User Profile Card at Bottom of Sidebar -->
-        <div class="p-3 border-t border-nile-border bg-nile-darkBg/60">
-          <div v-if="user" class="flex items-center justify-between gap-2">
+        <!-- Cartão de Perfil (Exibido apenas quando o usuário já está logado) -->
+        <div v-if="user" class="p-3 border-t border-nile-border bg-nile-darkBg/60">
+          <div class="flex items-center justify-between gap-2">
             <div @click="openEditProfile" class="flex items-center space-x-3 min-w-0 cursor-pointer group flex-1">
               <img 
                 v-if="user.avatarUrl" 
@@ -190,30 +191,20 @@
               </button>
             </div>
           </div>
-
-          <div v-else>
-            <button 
-              @click="openAuthModal()" 
-              class="w-full py-2.5 px-4 rounded-xl bg-nile-yellow hover:bg-nile-yellowHover text-nile-darkBg font-bold text-xs uppercase tracking-wider transition shadow-lg shadow-nile-yellow/20"
-            >
-              <i class="fa-solid fa-user-lock mr-2"></i>Entrar / Cadastrar
-            </button>
-          </div>
         </div>
-
       </aside>
 
-      <!-- MAIN CONTENT AREA -->
+      <!-- ÁREA CENTRAL DE CONTEÚDO -->
       <main class="flex-1 flex flex-col h-full min-w-0 overflow-hidden bg-nile-darkBg relative">
         
-        <!-- Sticky Top Bar -->
+        <!-- Cabeçalho Superior Fixo (Contém o único botão original de Entrar no canto superior direito) -->
         <header class="h-16 border-b border-nile-border/60 px-3 sm:px-6 flex items-center justify-between gap-2 sm:gap-4 z-10 bg-nile-darkBg/90 backdrop-blur-md sticky top-0 shrink-0">
           <div class="flex items-center space-x-2 sm:space-x-4 flex-1 min-w-0">
             <button @click="sidebarOpen = !sidebarOpen" class="md:hidden text-slate-300 hover:text-white p-2 shrink-0" aria-label="Abrir Menu">
               <i class="fa-solid fa-bars text-xl"></i>
             </button>
 
-            <!-- Catalog Search Bar -->
+            <!-- Barra de Busca -->
             <div class="relative flex-1 max-w-md lg:max-w-xl min-w-0">
               <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs sm:text-sm"></i>
               <input 
@@ -234,7 +225,7 @@
             </div>
           </div>
 
-          <!-- Right Action Shortcuts -->
+          <!-- Atalhos do Canto Superior Direito (Apenas 1 botão de Login) -->
           <div class="flex items-center space-x-2 sm:space-x-3 shrink-0">
             <button 
               @click="handleOpenCreatePlaylist" 
@@ -245,10 +236,10 @@
               <span class="hidden lg:inline">Nova Playlist</span>
             </button>
 
-            <!-- User Auth status badge -->
+            <!-- Único Botão Original de Login / Conta -->
             <button 
               @click="user ? openEditProfile() : openAuthModal()"
-              class="flex items-center space-x-2 bg-nile-card px-2.5 sm:px-3.5 py-1.5 rounded-full border border-nile-border hover:border-nile-blue transition max-w-[130px] sm:max-w-[220px] md:max-w-xs"
+              class="flex items-center space-x-2 bg-nile-card px-2.5 sm:px-3.5 py-1.5 rounded-full border border-nile-border hover:border-nile-blue transition max-w-[140px] sm:max-w-[220px] md:max-w-xs"
             >
               <img 
                 v-if="user && user.avatarUrl" 
@@ -261,13 +252,13 @@
           </div>
         </header>
 
-        <!-- DYNAMIC SCROLLABLE BODY CONTENT -->
+        <!-- CORPO ROLÁVEL DAS TELAS -->
         <div class="flex-1 overflow-y-auto p-4 sm:p-6 pb-8">
           
-          <!-- VIEW: HOME (INÍCIO) -->
+          <!-- TELA 1: INÍCIO (HOME) -->
           <div v-if="currentView === 'home'" class="space-y-6 sm:space-y-8 animate-fadeIn">
             
-            <!-- Hero Banner -->
+            <!-- Banner Principal -->
             <div class="relative rounded-2xl sm:rounded-3xl bg-gradient-to-r from-sky-950/70 via-nile-card to-amber-950/40 p-5 sm:p-8 border border-nile-yellow/20 overflow-hidden shadow-2xl">
               <div class="absolute -right-12 -bottom-12 w-80 h-80 bg-nile-blue/15 rounded-full blur-3xl pointer-events-none"></div>
               <div class="absolute left-1/3 -top-16 w-64 h-64 bg-nile-yellow/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -297,7 +288,7 @@
               </div>
             </div>
 
-            <!-- Catalog Tracks Grid -->
+            <!-- Grade de Músicas Disponíveis -->
             <div>
               <h3 class="text-lg sm:text-xl font-black mb-3 sm:mb-4 flex items-center space-x-2">
                 <i class="fa-solid fa-fire text-nile-yellow"></i>
@@ -322,6 +313,7 @@
                     <p class="text-[11px] text-slate-500 truncate">{{ track.album }}</p>
                   </div>
 
+                  <!-- Botão de Curtir (Permanece visível antes e depois do login) -->
                   <button 
                     @click.stop="toggleLikeTrack(track)"
                     class="p-2 text-slate-400 hover:text-nile-yellow transition shrink-0"
@@ -337,7 +329,7 @@
               </div>
             </div>
 
-            <!-- Featured Artists Grid -->
+            <!-- Grade de Artistas -->
             <div>
               <div class="flex items-center justify-between mb-3 sm:mb-4">
                 <h3 class="text-lg sm:text-xl font-black">Artistas no Servidor</h3>
@@ -362,16 +354,16 @@
 
           </div>
 
-          <!-- VIEW: SEARCH (BUSCA UNIFICADA: ARTISTAS, ÁLBUNS E MÚSICAS) -->
+          <!-- TELA 2: BUSCA UNIFICADA (ARTISTAS, ÁLBUNS E MÚSICAS) -->
           <div v-if="currentView === 'search'" class="space-y-6 animate-fadeIn">
             <div>
               <h2 class="text-2xl sm:text-3xl font-black mb-1">Buscar no Catálogo</h2>
               <p class="text-xs text-slate-400">
-                {{ searchQuery ? `Resultados para "${searchQuery}"` : 'Explore todos os artistas, álbuns e músicas disponíveis' }}
+                {{ searchQuery ? 'Resultados para "' + searchQuery + '"' : 'Explore todos os artistas, álbuns e músicas disponíveis' }}
               </p>
             </div>
 
-            <!-- Category Filter Pills -->
+            <!-- Filtros de Categoria -->
             <div class="flex items-center gap-2 overflow-x-auto pb-1">
               <button 
                 @click="searchFilterTab = 'all'"
@@ -403,7 +395,7 @@
               </button>
             </div>
 
-            <!-- Empty Search State (when nothing matches across all 3 categories) -->
+            <!-- Estado Vazio -->
             <div v-if="matchedArtists.length === 0 && matchedAlbums.length === 0 && searchResults.length === 0" class="p-12 sm:p-16 text-center bg-nile-card rounded-2xl border border-nile-border text-slate-500">
               <i class="fa-solid fa-magnifying-glass text-4xl mb-3 text-slate-600 block"></i>
               <p class="text-sm font-semibold">Nenhum artista, álbum ou música encontrado para "{{ searchQuery }}".</p>
@@ -411,7 +403,7 @@
             </div>
 
             <template v-else>
-              <!-- 1. MATCHED ARTISTS SECTION -->
+              <!-- Artistas Encontrados -->
               <div v-if="(searchFilterTab === 'all' || searchFilterTab === 'artists') && matchedArtists.length > 0" class="space-y-3">
                 <div class="flex items-center justify-between">
                   <h3 class="text-lg sm:text-xl font-black flex items-center space-x-2">
@@ -437,7 +429,7 @@
                 </div>
               </div>
 
-              <!-- 2. MATCHED ALBUMS SECTION -->
+              <!-- Álbuns Encontrados -->
               <div v-if="(searchFilterTab === 'all' || searchFilterTab === 'albums') && matchedAlbums.length > 0" class="space-y-3">
                 <div class="flex items-center justify-between">
                   <h3 class="text-lg sm:text-xl font-black flex items-center space-x-2">
@@ -471,7 +463,7 @@
                 </div>
               </div>
 
-              <!-- 3. MATCHED TRACKS SECTION -->
+              <!-- Músicas Encontradas -->
               <div v-if="(searchFilterTab === 'all' || searchFilterTab === 'tracks') && searchResults.length > 0" class="space-y-3">
                 <div class="flex items-center justify-between">
                   <h3 class="text-lg sm:text-xl font-black flex items-center space-x-2">
@@ -537,7 +529,7 @@
             </template>
           </div>
 
-          <!-- VIEW: ALBUM PAGE (PÁGINA DEDICADA DO ÁLBUM) -->
+          <!-- TELA 3: PÁGINA DO ÁLBUM -->
           <div v-if="currentView === 'album' && albumData" class="space-y-6 sm:space-y-8 animate-fadeIn">
             <div class="relative rounded-2xl sm:rounded-3xl bg-gradient-to-r from-amber-950/60 via-nile-card to-sky-950/60 p-5 sm:p-8 border border-nile-border overflow-hidden">
               <div class="flex flex-col sm:flex-row items-center sm:items-end space-y-5 sm:space-y-0 sm:space-x-8 relative z-10">
@@ -602,10 +594,8 @@
             </div>
           </div>
 
-          <!-- VIEW: ARTIST PAGE (PÁGINA DEDICADA DO ARTISTA) -->
+          <!-- TELA 4: PÁGINA DO ARTISTA -->
           <div v-if="currentView === 'artist' && artistData" class="space-y-6 sm:space-y-8 animate-fadeIn">
-            
-            <!-- Artist Header Banner -->
             <div class="relative rounded-2xl sm:rounded-3xl bg-gradient-to-r from-sky-950/80 via-nile-card to-amber-950/40 p-5 sm:p-8 border border-nile-border overflow-hidden">
               <div class="flex flex-col sm:flex-row items-center sm:items-end space-y-5 sm:space-y-0 sm:space-x-8 relative z-10">
                 <img :src="artistData.image" :alt="artistData.name" class="w-32 h-32 sm:w-40 sm:h-40 rounded-full object-cover shadow-2xl border-4 border-nile-blue/40" />
@@ -645,7 +635,6 @@
               </div>
             </div>
 
-            <!-- Artist Popular Tracks -->
             <div>
               <h3 class="text-xl sm:text-2xl font-black mb-4">Músicas do Artista</h3>
 
@@ -678,36 +667,15 @@
                 </div>
               </div>
             </div>
-
           </div>
 
-          <!-- VIEW: LIBRARY (SUA BIBLIOTECA) -->
+          <!-- TELA 5: SUA BIBLIOTECA -->
           <div v-if="currentView === 'library'" class="space-y-6 animate-fadeIn">
             <div>
               <h2 class="text-2xl sm:text-3xl font-black mb-1">Sua Biblioteca</h2>
               <p class="text-xs text-slate-400">Acesse suas playlists, músicas favoritadas e artistas salvos</p>
             </div>
 
-            <!-- Login Banner if logged out -->
-            <div v-if="!user" class="p-4 sm:p-5 rounded-2xl bg-nile-card border border-nile-yellow/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-xl bg-nile-yellow/15 text-nile-yellow flex items-center justify-center shrink-0">
-                  <i class="fa-solid fa-user-lock"></i>
-                </div>
-                <div>
-                  <p class="text-sm font-bold text-white">Entre na sua conta Nile</p>
-                  <p class="text-xs text-slate-400">Faça login para salvar músicas favoritas, seguir artistas e criar playlists.</p>
-                </div>
-              </div>
-              <button 
-                @click="openAuthModal('Faça login para salvar favoritos e playlists na sua conta.')" 
-                class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-nile-yellow hover:bg-nile-yellowHover text-nile-darkBg font-bold text-xs uppercase tracking-wider transition"
-              >
-                Fazer Login
-              </button>
-            </div>
-
-            <!-- Quick Cards Navigation inside Library -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
               <div @click="navigate('liked')" class="bg-gradient-to-br from-amber-950/60 to-nile-card p-5 sm:p-6 rounded-2xl border border-nile-yellow/25 cursor-pointer hover:scale-[1.01] transition">
                 <i class="fa-solid fa-heart text-nile-yellow text-2xl sm:text-3xl mb-2 sm:mb-3"></i>
@@ -728,7 +696,6 @@
               </div>
             </div>
 
-            <!-- All Playlists -->
             <h3 class="text-lg sm:text-xl font-bold pt-2">Suas Playlists</h3>
             <div v-if="playlists.length === 0" class="p-8 text-center bg-nile-card rounded-2xl text-slate-500 text-sm">
               Nenhuma playlist criada ainda.
@@ -751,7 +718,7 @@
             </div>
           </div>
 
-          <!-- VIEW: LIKED SONGS (FAVORITAS) -->
+          <!-- TELA 6: MÚSICAS CURTIDAS -->
           <div v-if="currentView === 'liked'" class="space-y-6 animate-fadeIn">
             <div class="flex flex-col sm:flex-row items-center sm:items-end text-center sm:text-left space-y-4 sm:space-y-0 sm:space-x-6 p-5 sm:p-6 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-amber-950/60 via-nile-card to-sky-950/40 border border-nile-yellow/25">
               <div class="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl bg-gradient-to-br from-nile-yellow to-amber-300 flex items-center justify-center text-nile-darkBg text-4xl sm:text-5xl shadow-2xl shrink-0">
@@ -773,19 +740,7 @@
               </div>
             </div>
 
-            <div v-if="!user" class="p-10 sm:p-12 text-center bg-nile-card rounded-2xl border border-nile-border space-y-3">
-              <i class="fa-solid fa-user-lock text-4xl text-nile-yellow block"></i>
-              <p class="text-sm font-bold text-white">Faça login para ver e salvar suas músicas favoritas</p>
-              <p class="text-xs text-slate-400 max-w-md mx-auto">Suas músicas curtidas ficam vinculadas à sua conta para você acessar de qualquer dispositivo.</p>
-              <button 
-                @click="openAuthModal('Entre na sua conta para salvar e acessar suas músicas favoritas.')" 
-                class="mt-2 bg-nile-yellow hover:bg-nile-yellowHover text-nile-darkBg px-6 py-2.5 rounded-full font-bold text-xs uppercase tracking-wider shadow-lg transition"
-              >
-                Entrar / Cadastrar
-              </button>
-            </div>
-
-            <div v-else-if="likedTracks.length === 0" class="p-12 text-center bg-nile-card rounded-2xl border border-nile-border text-slate-500">
+            <div v-if="likedTracks.length === 0" class="p-12 text-center bg-nile-card rounded-2xl border border-nile-border text-slate-500">
               <i class="fa-regular fa-heart text-4xl mb-3 text-slate-600 block"></i>
               <p class="text-sm font-semibold">Você ainda não salvou nenhuma música.</p>
               <p class="text-xs text-slate-600 mt-1">Clique no coração em qualquer música para salvá-la aqui.</p>
@@ -816,25 +771,14 @@
             </div>
           </div>
 
-          <!-- VIEW: FAVORITE ARTISTS -->
+          <!-- TELA 7: ARTISTAS FAVORITOS -->
           <div v-if="currentView === 'favArtists'" class="space-y-6 animate-fadeIn">
             <div>
               <h2 class="text-2xl sm:text-3xl font-black mb-1">Artistas Favoritos</h2>
               <p class="text-xs text-slate-400">Artistas que você favoritou e acompanha</p>
             </div>
 
-            <div v-if="!user" class="p-10 sm:p-12 text-center bg-nile-card rounded-2xl border border-nile-border space-y-3">
-              <i class="fa-solid fa-user-lock text-4xl text-nile-blue block"></i>
-              <p class="text-sm font-bold text-white">Faça login para acompanhar seus artistas favoritos</p>
-              <button 
-                @click="openAuthModal('Entre na sua conta para favoritar artistas.')" 
-                class="mt-2 bg-nile-yellow hover:bg-nile-yellowHover text-nile-darkBg px-6 py-2.5 rounded-full font-bold text-xs uppercase tracking-wider shadow-lg transition"
-              >
-                Entrar / Cadastrar
-              </button>
-            </div>
-
-            <div v-else-if="favoriteArtists.length === 0" class="p-12 text-center bg-nile-card rounded-2xl border border-nile-border text-slate-500">
+            <div v-if="favoriteArtists.length === 0" class="p-12 text-center bg-nile-card rounded-2xl border border-nile-border text-slate-500">
               <i class="fa-solid fa-star text-4xl mb-3 text-slate-600 block"></i>
               <p class="text-sm font-semibold">Nenhum artista favoritado.</p>
             </div>
@@ -853,7 +797,7 @@
             </div>
           </div>
 
-          <!-- VIEW: PLAYLIST DETAIL -->
+          <!-- TELA 8: DETALHE DA PLAYLIST -->
           <div v-if="currentView === 'playlist' && activePlaylist" class="space-y-6 animate-fadeIn">
             <div class="flex flex-col sm:flex-row items-center sm:items-end text-center sm:text-left space-y-4 sm:space-y-0 sm:space-x-6 p-5 sm:p-6 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-sky-950/70 via-nile-card to-amber-950/40 border border-nile-border">
               <div class="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl bg-gradient-to-tr from-nile-yellow to-nile-blue flex items-center justify-center text-nile-darkBg text-4xl sm:text-5xl shadow-2xl font-black shrink-0">
@@ -886,7 +830,6 @@
               </div>
             </div>
 
-            <!-- Playlist Track List -->
             <div v-if="activePlaylist.tracks.length === 0" class="p-12 text-center bg-nile-card rounded-2xl border border-nile-border text-slate-500 text-sm">
               Esta playlist está vazia. Adicione faixas navegando no catálogo!
             </div>
@@ -922,10 +865,10 @@
 
         </div>
 
-        <!-- FIXED STICKY AUDIO PLAYER BAR (RESPONSIVE MOBILE & DESKTOP) -->
+        <!-- PLAYER DE ÁUDIO FIXO NA BASE (RESPONSIVO MOBILE E DESKTOP) -->
         <footer class="fixed bottom-0 left-0 right-0 glass-player border-t border-nile-border px-3 py-2.5 md:py-0 md:px-6 md:h-24 flex flex-col md:flex-row items-center justify-between gap-2 md:gap-4 z-40">
           
-          <!-- TOP ROW ON MOBILE / LEFT COLUMN ON DESKTOP: Track Info + Quick Mobile Actions -->
+          <!-- Informações da Faixa + Botão de Like + Controles Compactos Mobile -->
           <div class="flex items-center justify-between md:justify-start w-full md:w-[30%] md:min-w-[220px] gap-2 md:gap-3">
             <div class="flex items-center space-x-3 min-w-0 flex-1 md:flex-initial md:max-w-[calc(100%-44px)]">
               <template v-if="currentTrack">
@@ -955,7 +898,7 @@
               </template>
             </div>
 
-            <!-- Heart button + Mobile Compact Controls -->
+            <!-- Coração de Like no Player + Controles Mobile -->
             <div class="flex items-center space-x-1.5 shrink-0">
               <button 
                 v-if="currentTrack" 
@@ -966,7 +909,6 @@
                 <i :class="isTrackLiked(currentTrack.id) ? 'fa-solid fa-heart text-nile-yellow' : 'fa-regular fa-heart'"></i>
               </button>
 
-              <!-- Mobile-only compact Prev / Play / Next -->
               <div class="flex md:hidden items-center space-x-1">
                 <button @click="prevTrack" class="text-slate-300 hover:text-white p-2 text-sm">
                   <i class="fa-solid fa-backward-step"></i>
@@ -984,9 +926,8 @@
             </div>
           </div>
 
-          <!-- BOTTOM ROW ON MOBILE / CENTER COLUMN ON DESKTOP: Controls & Seekbar -->
+          <!-- Centro: Controles de Reprodução Desktop & Barra de Progresso -->
           <div class="flex flex-col items-center justify-center w-full md:flex-1 md:max-w-2xl space-y-1 md:space-y-1.5">
-            <!-- Desktop Playback Buttons -->
             <div class="hidden md:flex items-center space-x-5">
               <button @click="isShuffle = !isShuffle" :class="isShuffle ? 'text-nile-blue' : 'text-slate-400 hover:text-white'" class="text-xs p-1">
                 <i class="fa-solid fa-shuffle"></i>
@@ -1012,7 +953,6 @@
               </button>
             </div>
 
-            <!-- Audio Seekbar (Visible on both Mobile & Desktop) -->
             <div class="w-full flex items-center space-x-2.5 text-[10px] md:text-[11px] text-slate-400 font-mono">
               <span class="w-9 text-right shrink-0">{{ formatTime(currentTime) }}</span>
               <input 
@@ -1027,7 +967,7 @@
             </div>
           </div>
 
-          <!-- RIGHT: Volume slider (Desktop) -->
+          <!-- Direita: Controle de Volume (Desktop) -->
           <div class="hidden md:flex items-center justify-end space-x-3 w-[30%] min-w-[140px]">
             <button @click="toggleMute" class="text-slate-400 hover:text-white text-sm">
               <i v-if="isMuted || volume === 0" class="fa-solid fa-volume-xmark text-rose-400"></i>
@@ -1050,7 +990,7 @@
 
     </div>
 
-    <!-- HIDDEN AUDIO ENGINE -->
+    <!-- MOTOR DE ÁUDIO HTML5 -->
     <audio 
       ref="audioRef"
       @timeupdate="onTimeUpdate"
@@ -1059,7 +999,7 @@
       @error="onAudioError"
     ></audio>
 
-    <!-- MODAL: AUTHENTICATION (LOGIN / REGISTER) -->
+    <!-- MODAL 1: AUTENTICAÇÃO (LOGIN / CADASTRO) -->
     <div v-if="activeModal === 'auth'" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
       <div class="bg-nile-card border border-nile-border rounded-3xl w-full max-w-md p-6 shadow-2xl relative space-y-4 max-h-[90dvh] overflow-y-auto">
         <button @click="closeModal" class="absolute right-5 top-5 text-slate-400 hover:text-white text-lg">
@@ -1072,7 +1012,7 @@
           </div>
           <h3 class="text-xl font-black text-white">Sua Conta Nile</h3>
           
-          <!-- Custom Contextual Message when triggered by Favorite/Save action -->
+          <!-- Mensagem contextual quando aberta ao clicar no Like/Favoritar -->
           <div v-if="authPromptMessage" class="mt-2 p-2.5 rounded-xl bg-nile-yellow/10 border border-nile-yellow/30 text-nile-yellow text-xs font-medium">
             <i class="fa-solid fa-heart mr-1.5"></i>{{ authPromptMessage }}
           </div>
@@ -1137,7 +1077,7 @@
       </div>
     </div>
 
-    <!-- MODAL: EDIT PROFILE (ALTERAR DADOS E IMAGEM) -->
+    <!-- MODAL 2: EDITAR PERFIL -->
     <div v-if="activeModal === 'editProfile' && user" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
       <div class="bg-nile-card border border-nile-border rounded-3xl w-full max-w-md p-6 shadow-2xl relative space-y-4 max-h-[90dvh] overflow-y-auto">
         <button @click="closeModal" class="absolute right-5 top-5 text-slate-400 hover:text-white text-lg">
@@ -1150,7 +1090,6 @@
         </div>
 
         <form @submit.prevent="saveProfileChanges" class="space-y-4 text-xs pt-1">
-          <!-- Avatar Preview & Upload -->
           <div class="flex flex-col items-center space-y-3">
             <div class="relative group">
               <img 
@@ -1162,13 +1101,12 @@
               <div v-else class="w-24 h-24 rounded-full bg-gradient-to-tr from-nile-yellow to-nile-blue flex items-center justify-center font-black text-nile-darkBg text-2xl uppercase shadow-xl">
                 {{ profileForm.displayName ? profileForm.displayName.substring(0, 2) : 'NL' }}
               </div>
-
-              <label class="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-nile-blue hover:bg-nile-blueHover text-nile-darkBg flex items-center justify-center cursor-pointer shadow-lg transition" title="Escolher foto do dispositivo">
+              <label class="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-nile-blue text-nile-darkBg flex items-center justify-center cursor-pointer shadow-lg hover:scale-105 transition" title="Alterar Foto">
                 <i class="fa-solid fa-camera text-xs"></i>
-                <input type="file" accept="image/*" @change="handleAvatarFileChange" class="hidden" />
+                <input type="file" accept="image/*" @change="onAvatarFileSelected" class="hidden" />
               </label>
             </div>
-            <span class="text-[11px] text-slate-400">Clique no ícone da câmera para enviar uma foto</span>
+            <span class="text-[11px] text-slate-400">Clique no ícone da câmera para alterar sua foto</span>
           </div>
 
           <div>
@@ -1177,65 +1115,56 @@
               v-model="profileForm.displayName" 
               type="text" 
               required
-              placeholder="Como você quer ser chamado" 
+              placeholder="Seu nome" 
               class="w-full bg-nile-darkBg border border-nile-border rounded-xl px-3.5 py-2.5 text-slate-100 focus:outline-none focus:border-nile-yellow"
             />
           </div>
 
           <div>
             <label class="block text-slate-400 mb-1 font-semibold">Bio / Status Musical</label>
-            <input 
+            <textarea 
               v-model="profileForm.bio" 
-              type="text" 
-              maxlength="80"
-              placeholder="Ex: Ouvindo lo-fi e eletrônica" 
-              class="w-full bg-nile-darkBg border border-nile-border rounded-xl px-3.5 py-2.5 text-slate-100 focus:outline-none focus:border-nile-yellow"
-            />
+              rows="2"
+              placeholder="O que você gosta de ouvir?" 
+              class="w-full bg-nile-darkBg border border-nile-border rounded-xl px-3.5 py-2.5 text-slate-100 focus:outline-none focus:border-nile-yellow resize-none"
+            ></textarea>
           </div>
 
-          <div>
-            <label class="block text-slate-400 mb-1 font-semibold">Ou cole o link de uma imagem (Opcional)</label>
-            <input 
-              v-model="profileForm.avatarUrl" 
-              type="url" 
-              placeholder="https://exemplo.com/minha-foto.jpg" 
-              class="w-full bg-nile-darkBg border border-nile-border rounded-xl px-3.5 py-2.5 text-slate-100 focus:outline-none focus:border-nile-blue"
-            />
-          </div>
-
-          <div class="pt-2 flex items-center justify-between">
+          <div class="flex gap-2.5 pt-1">
             <button 
               type="button" 
-              @click="logoutUser(); closeModal();" 
-              class="text-rose-400 hover:underline font-semibold"
+              @click="logoutUser(); closeModal();"
+              class="px-4 py-3 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 font-bold text-xs transition"
             >
-              Sair da conta
+              Sair da Conta
             </button>
-
-            <div class="flex space-x-2">
-              <button type="button" @click="closeModal" class="px-4 py-2 text-slate-400 hover:text-white font-semibold">Cancelar</button>
-              <button 
-                type="submit" 
-                :disabled="profileSaving"
-                class="px-5 py-2.5 bg-nile-yellow hover:bg-nile-yellowHover disabled:opacity-60 text-nile-darkBg font-black rounded-xl uppercase tracking-wider shadow-lg flex items-center space-x-2"
-              >
-                <i v-if="profileSaving" class="fa-solid fa-circle-notch fa-spin"></i>
-                <span>Salvar Perfil</span>
-              </button>
-            </div>
+            <button 
+              type="submit" 
+              :disabled="profileSaving"
+              class="flex-1 py-3 rounded-xl bg-nile-yellow hover:bg-nile-yellowHover disabled:opacity-60 text-nile-darkBg font-black uppercase tracking-wider text-xs shadow-lg transition flex items-center justify-center space-x-2"
+            >
+              <i v-if="profileSaving" class="fa-solid fa-circle-notch fa-spin"></i>
+              <span>Salvar Alterações</span>
+            </button>
           </div>
         </form>
       </div>
     </div>
 
-    <!-- MODAL: CREATE PLAYLIST -->
+    <!-- MODAL 3: CRIAR NOVA PLAYLIST -->
     <div v-if="activeModal === 'createPlaylist'" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
       <div class="bg-nile-card border border-nile-border rounded-3xl w-full max-w-md p-6 shadow-2xl relative space-y-4">
         <button @click="closeModal" class="absolute right-5 top-5 text-slate-400 hover:text-white text-lg">
           <i class="fa-solid fa-xmark"></i>
         </button>
 
-        <h3 class="text-lg font-black text-white">Criar Nova Playlist</h3>
+        <div class="text-center space-y-1">
+          <div class="w-12 h-12 rounded-2xl bg-nile-blue/20 text-nile-blue flex items-center justify-center text-xl mx-auto mb-2">
+            <i class="fa-solid fa-folder-plus"></i>
+          </div>
+          <h3 class="text-xl font-black text-white">Nova Playlist</h3>
+          <p class="text-xs text-slate-400">Dê um nome para sua seleção musical</p>
+        </div>
 
         <form @submit.prevent="createPlaylist" class="space-y-3 text-xs">
           <div>
@@ -1244,68 +1173,80 @@
               v-model="newPlaylistForm.name" 
               type="text" 
               required
-              placeholder="Ex: Vibe Noturna" 
-              class="w-full bg-nile-darkBg border border-nile-border rounded-xl px-3 py-2.5 text-slate-100 focus:outline-none focus:border-nile-yellow"
+              placeholder="Ex: Vibe Noturna, Treino, Favoritas..." 
+              class="w-full bg-nile-darkBg border border-nile-border rounded-xl px-3.5 py-2.5 text-slate-100 focus:outline-none focus:border-nile-yellow"
             />
           </div>
 
           <div>
-            <label class="block text-slate-400 mb-1 font-semibold">Descrição (Opcional)</label>
+            <label class="block text-slate-400 mb-1 font-semibold">Descrição (opcional)</label>
             <input 
               v-model="newPlaylistForm.description" 
               type="text" 
-              placeholder="Descreva o clima desta playlist" 
-              class="w-full bg-nile-darkBg border border-nile-border rounded-xl px-3 py-2.5 text-slate-100 focus:outline-none focus:border-nile-yellow"
+              placeholder="Uma breve descrição da playlist" 
+              class="w-full bg-nile-darkBg border border-nile-border rounded-xl px-3.5 py-2.5 text-slate-100 focus:outline-none focus:border-nile-yellow"
             />
           </div>
 
-          <div class="pt-2 flex justify-end space-x-3">
-            <button type="button" @click="closeModal" class="px-4 py-2 text-slate-400 hover:text-white font-semibold">Cancelar</button>
-            <button type="submit" class="px-6 py-2.5 bg-nile-yellow hover:bg-nile-yellowHover text-nile-darkBg font-black rounded-xl uppercase tracking-wider shadow-lg shadow-nile-yellow/20">
-              Criar Playlist
-            </button>
-          </div>
+          <button 
+            type="submit" 
+            class="w-full py-3 rounded-xl bg-nile-yellow hover:bg-nile-yellowHover text-nile-darkBg font-black uppercase tracking-wider text-xs shadow-lg transition"
+          >
+            Criar Playlist
+          </button>
         </form>
       </div>
     </div>
 
-    <!-- MODAL: ADD TO PLAYLIST -->
-    <div v-if="activeModal === 'addToPlaylist' && selectedTrackForPlaylist" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-      <div class="bg-nile-card border border-nile-border rounded-3xl w-full max-w-sm p-6 shadow-2xl relative space-y-4">
+    <!-- MODAL 4: ADICIONAR MÚSICA À PLAYLIST -->
+    <div v-if="activeModal === 'addToPlaylist' && trackToAdd" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+      <div class="bg-nile-card border border-nile-border rounded-3xl w-full max-w-md p-6 shadow-2xl relative space-y-4">
         <button @click="closeModal" class="absolute right-5 top-5 text-slate-400 hover:text-white text-lg">
           <i class="fa-solid fa-xmark"></i>
         </button>
 
-        <h3 class="text-base font-bold text-white">Adicionar à Playlist</h3>
-        <p class="text-xs text-slate-400">Escolha a playlist para "{{ selectedTrackForPlaylist.title }}"</p>
+        <div class="space-y-1">
+          <h3 class="text-lg font-black text-white">Adicionar à Playlist</h3>
+          <p class="text-xs text-nile-blue truncate">{{ trackToAdd.title }} — {{ trackToAdd.artist }}</p>
+        </div>
 
-        <div class="space-y-2 max-h-60 overflow-y-auto pr-1">
-          <div 
-            v-for="p in playlists" 
-            :key="'add-to-' + p.id"
-            @click="addTrackToPlaylist(p.id, selectedTrackForPlaylist)"
-            class="p-3 bg-nile-darkBg hover:bg-nile-hover rounded-xl border border-nile-border cursor-pointer flex items-center justify-between transition"
+        <div v-if="playlists.length === 0" class="p-6 text-center bg-nile-darkBg rounded-2xl border border-nile-border text-xs text-slate-400 space-y-3">
+          <p>Você ainda não possui nenhuma playlist.</p>
+          <button 
+            @click="activeModal = 'createPlaylist'" 
+            class="bg-nile-yellow text-nile-darkBg px-4 py-2 rounded-full font-bold"
           >
-            <span class="font-bold text-xs text-white">{{ p.name }}</span>
-            <span class="text-[10px] text-nile-blue">{{ p.tracks.length }} músicas</span>
-          </div>
+            Criar Primeira Playlist
+          </button>
+        </div>
+
+        <div v-else class="space-y-2 max-h-60 overflow-y-auto">
+          <button 
+            v-for="pl in playlists" 
+            :key="'add-pl-' + pl.id"
+            @click="addTrackToPlaylist(pl.id, trackToAdd)"
+            class="w-full flex items-center justify-between p-3 rounded-xl bg-nile-darkBg hover:bg-nile-hover border border-nile-border text-left transition"
+          >
+            <div class="flex items-center space-x-3 min-w-0">
+              <i class="fa-solid fa-music text-nile-yellow"></i>
+              <span class="text-xs font-bold text-white truncate">{{ pl.name }}</span>
+            </div>
+            <span class="text-[11px] text-slate-400 shrink-0">{{ pl.tracks.length }} faixas</span>
+          </button>
         </div>
       </div>
     </div>
 
-    <!-- TOAST NOTIFICATIONS -->
-    <div class="fixed bottom-32 md:bottom-28 right-4 sm:right-6 left-4 sm:left-auto z-50 pointer-events-none flex flex-col items-end space-y-2">
-      <transition-group name="toast">
-        <div 
-          v-for="t in toasts" 
-          :key="t.id"
-          class="pointer-events-auto bg-nile-card border border-nile-yellow/40 text-white text-xs px-4 py-3 rounded-2xl shadow-2xl flex items-center space-x-3 max-w-sm"
-        >
-          <i class="fa-solid fa-circle-check text-nile-yellow text-sm shrink-0"></i>
-          <span>{{ t.message }}</span>
-        </div>
-      </transition-group>
-    </div>
+    <!-- NOTIFICAÇÃO FLUTUANTE (TOAST) -->
+    <transition name="toast">
+      <div 
+        v-if="toast.visible" 
+        class="fixed bottom-28 md:bottom-28 right-4 sm:right-6 z-50 bg-nile-surface border border-nile-yellow/40 text-white px-4 py-3 rounded-2xl shadow-2xl flex items-center space-x-3 max-w-xs sm:max-w-sm"
+      >
+        <i :class="toast.type === 'error' ? 'fa-solid fa-circle-exclamation text-rose-400' : 'fa-solid fa-circle-check text-nile-yellow'"></i>
+        <span class="text-xs font-medium leading-snug">{{ toast.message }}</span>
+      </div>
+    </transition>
 
   </div>
 
