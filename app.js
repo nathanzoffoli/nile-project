@@ -1,22 +1,21 @@
 // =========================================================================
-// 1. CONFIGURAÇÃO DO SERVIDOR (COLE SUAS CHAVES DO SUPABASE ABAIXO)
+// CONFIGURAÇÃO DO SERVIDOR (COLE SUAS CHAVES DO SUPABASE ABAIXO)
 // =========================================================================
 const SUPABASE_URL = 'https://yqyytdvhcxfjkugjerme.supabase.co/rest/v1/';
 const SUPABASE_ANON_KEY = 'sb_publishable_FZSVXEBEqr27PzRGq8ElSg_S4pfjPxD';
-
-// URL DO ARQUIVO JSON DE MÚSICAS NO SEU SERVIDOR
 const CATALOG_JSON_URL = './musicas.json';
 
-// Inicializa o cliente Supabase caso as chaves tenham sido preenchidas
 const isSupabaseConfigured =
-  SUPABASE_URL.startsWith('http') && SUPABASE_ANON_KEY.length > 20;
+  SUPABASE_URL.indexOf('http') === 0 &&
+  SUPABASE_ANON_KEY.length > 20;
 
-const supabaseClient = isSupabaseConfigured
-  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-  : null;
+let supabaseClient = null;
+if (isSupabaseConfigured && window.supabase) {
+  supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}
 
-// Catálogo de fallback caso o arquivo musicas.json externo ainda não esteja acessível
-const DEFAULT_SERVER_CATALOG = [
+// Catálogo padrão de demonstração (usado caso musicas.json não esteja acessível)
+const FALLBACK_CATALOG = [
   {
     id: 'nile-1',
     title: 'Golden Horizon',
@@ -84,19 +83,20 @@ const { createApp } = Vue;
 createApp({
   data() {
     return {
-      isSupabaseConfigured,
+      isSupabaseConfigured: isSupabaseConfigured,
       currentView: 'home',
       sidebarOpen: false,
       isLoading: false,
 
-      // User & Auth State
+      // Estado de Usuário e Autenticação
       user: null,
       authMode: 'login',
       authLoading: false,
       authPromptMessage: '',
+      pendingAction: null,
       authForm: { displayName: '', email: '', password: '' },
 
-      // Profile Edit State
+      // Estado de Edição de Perfil
       profileSaving: false,
       profileForm: {
         displayName: '',
@@ -106,7 +106,7 @@ createApp({
         avatarPreview: ''
       },
 
-      // Audio Engine State
+      // Estado do Motor de Áudio
       currentTrack: null,
       isPlaying: false,
       currentTime: 0,
@@ -116,7 +116,7 @@ createApp({
       isShuffle: false,
       isRepeat: false,
 
-      // Content collections
+      // Coleções de Conteúdo
       catalogTracks: [],
       searchResults: [],
       likedTracks: [],
@@ -125,22 +125,23 @@ createApp({
         { id: 'pl-1', name: 'Favoritas do Nilo', description: 'Seleção suave para relaxar', tracks: [] }
       ],
 
-      // Artist & Album Page Data
+      // Páginas de Artista e Álbum
       artistData: null,
       albumData: null,
 
-      // Search Query & Filter Tab
+      // Busca e Filtros
       searchQuery: '',
       searchFilterTab: 'all',
 
-      // Modals
+      // Modais
       activeModal: null,
-      selectedTrackForPlaylist: null,
+      trackToAdd: null,
       activePlaylistId: null,
 
-      // Forms & Toasts
+      // Formulários e Notificações
       newPlaylistForm: { name: '', description: '' },
-      toasts: []
+      toast: { visible: false, message: '', type: 'success' },
+      toastTimer: null
     };
   },
 
@@ -180,7 +181,7 @@ createApp({
       (this.catalogTracks || []).forEach(track => {
         const albumName = track.album || 'Single';
         const artistName = track.artist || 'Artista Desconhecido';
-        const key = `${albumName.toLowerCase()}__${artistName.toLowerCase()}`;
+        const key = albumName.toLowerCase() + '__' + artistName.toLowerCase();
 
         if (!map.has(key)) {
           map.set(key, {
@@ -202,8 +203,8 @@ createApp({
 
       return this.popularArtists.filter(artist => {
         const directMatch =
-          (artist.name && artist.name.toLowerCase().includes(q)) ||
-          (artist.genre && artist.genre.toLowerCase().includes(q));
+          (artist.name && artist.name.toLowerCase().indexOf(q) !== -1) ||
+          (artist.genre && artist.genre.toLowerCase().indexOf(q) !== -1);
 
         const hasMatchingTrack = this.searchResults.some(
           t => t.artist && t.artist.toLowerCase() === artist.name.toLowerCase()
@@ -219,12 +220,12 @@ createApp({
 
       return this.catalogAlbums.filter(album => {
         const directMatch =
-          (album.name && album.name.toLowerCase().includes(q)) ||
-          (album.artist && album.artist.toLowerCase().includes(q)) ||
-          (album.genre && album.genre.toLowerCase().includes(q));
+          (album.name && album.name.toLowerCase().indexOf(q) !== -1) ||
+          (album.artist && album.artist.toLowerCase().indexOf(q) !== -1) ||
+          (album.genre && album.genre.toLowerCase().indexOf(q) !== -1);
 
         const hasMatchingTrack = album.tracks.some(
-          t => t.title && t.title.toLowerCase().includes(q)
+          t => t.title && t.title.toLowerCase().indexOf(q) !== -1
         );
 
         return directMatch || hasMatchingTrack;
@@ -238,7 +239,7 @@ createApp({
       this.currentView = view;
       this.sidebarOpen = false;
       if (view === 'search' && !this.searchQuery) {
-        this.searchResults = [...this.catalogTracks];
+        this.searchResults = this.catalogTracks.slice();
       }
     },
 
@@ -247,18 +248,18 @@ createApp({
       this.isLoading = true;
       try {
         const response = await fetch(CATALOG_JSON_URL, { cache: 'no-store' });
-        if (!response.ok) throw new Error('Arquivo JSON remoto não encontrado');
+        if (!response.ok) throw new Error('Arquivo JSON não encontrado');
         const data = await response.json();
 
         if (Array.isArray(data) && data.length > 0) {
           this.catalogTracks = data.filter(t => t.url);
         } else {
-          this.catalogTracks = DEFAULT_SERVER_CATALOG;
+          this.catalogTracks = FALLBACK_CATALOG;
         }
       } catch (err) {
-        this.catalogTracks = DEFAULT_SERVER_CATALOG;
+        this.catalogTracks = FALLBACK_CATALOG;
       } finally {
-        this.searchResults = [...this.catalogTracks];
+        this.searchResults = this.catalogTracks.slice();
         this.isLoading = false;
       }
     },
@@ -266,15 +267,15 @@ createApp({
     searchCatalog() {
       const q = (this.searchQuery || '').trim().toLowerCase();
       if (!q) {
-        this.searchResults = [...this.catalogTracks];
+        this.searchResults = this.catalogTracks.slice();
         return;
       }
 
       this.searchResults = this.catalogTracks.filter(track =>
-        (track.title && track.title.toLowerCase().includes(q)) ||
-        (track.artist && track.artist.toLowerCase().includes(q)) ||
-        (track.album && track.album.toLowerCase().includes(q)) ||
-        (track.genre && track.genre.toLowerCase().includes(q))
+        (track.title && track.title.toLowerCase().indexOf(q) !== -1) ||
+        (track.artist && track.artist.toLowerCase().indexOf(q) !== -1) ||
+        (track.album && track.album.toLowerCase().indexOf(q) !== -1) ||
+        (track.genre && track.genre.toLowerCase().indexOf(q) !== -1)
       );
     },
 
@@ -320,7 +321,7 @@ createApp({
     // --- AUDIO PLAYER ENGINE ---
     playTrack(track) {
       if (!track || !track.url) {
-        this.showToast("Prévia de áudio indisponível para esta faixa.");
+        this.showToast('Prévia de áudio indisponível para esta faixa.', 'error');
         return;
       }
 
@@ -338,7 +339,7 @@ createApp({
           this.isPlaying = true;
         }).catch(() => {
           this.isPlaying = false;
-          this.showToast("Erro ao tocar áudio.");
+          this.showToast('Erro ao tocar áudio.', 'error');
         });
       });
     },
@@ -402,7 +403,7 @@ createApp({
 
     onAudioError() {
       this.isPlaying = false;
-      this.showToast("Não foi possível carregar o arquivo de áudio.");
+      this.showToast('Não foi possível carregar o arquivo de áudio.', 'error');
     },
 
     onTimeUpdate() {
@@ -444,40 +445,69 @@ createApp({
       if (!seconds || isNaN(seconds)) return '00:00';
       const mins = Math.floor(seconds / 60);
       const secs = Math.floor(seconds % 60);
-      return `${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+      return (mins < 10 ? '0' : '') + mins + ':' + (secs < 10 ? '0' : '') + secs;
     },
 
-    // --- BLOQUEIO DE LOGIN PARA SALVAR FAVORITOS / PLAYLISTS ---
-    requireAuth(message) {
+    // --- VERIFICAÇÃO DE LOGIN E AÇÃO PENDENTE APÓS ENTRAR ---
+    requireAuth(message, pendingAction) {
       if (this.user) return true;
+      this.pendingAction = pendingAction || null;
       this.openAuthModal(message || 'Faça login ou crie uma conta para salvar suas músicas favoritas!');
       return false;
     },
 
-    openAuthModal(message = '') {
-      this.authPromptMessage = message;
+    openAuthModal(message) {
+      this.authPromptMessage = message || '';
       this.authMode = 'login';
-      this.openModal('auth');
+      this.activeModal = 'auth';
     },
 
-    // --- LIKED TRACKS ---
+    executePendingAction() {
+      if (!this.pendingAction || !this.user) return;
+      const action = this.pendingAction;
+      this.pendingAction = null;
+
+      if (action.type === 'likeTrack' && action.payload) {
+        if (!this.isTrackLiked(action.payload.id)) {
+          this.likedTracks.push(action.payload);
+          this.syncUserDataToCloud();
+          this.showToast('"' + action.payload.title + '" salva nos favoritos!');
+        }
+      } else if (action.type === 'favoriteArtist' && action.payload) {
+        if (!this.isArtistFavorited(action.payload.name)) {
+          this.favoriteArtists.push(action.payload);
+          this.syncUserDataToCloud();
+          this.showToast('"' + action.payload.name + '" adicionado aos artistas favoritos!');
+        }
+      } else if (action.type === 'createPlaylist') {
+        this.activeModal = 'createPlaylist';
+      } else if (action.type === 'addToPlaylist' && action.payload) {
+        this.trackToAdd = action.payload;
+        this.activeModal = 'addToPlaylist';
+      }
+    },
+
+    // --- LIKED TRACKS (BOTÃO DE CURTIR) ---
     isTrackLiked(trackId) {
       if (!this.user) return false;
       return this.likedTracks.some(t => t.id === trackId);
     },
 
     toggleLikeTrack(track) {
-      if (!this.requireAuth(`Faça login para salvar "${track.title}" nas suas músicas favoritas!`)) {
+      if (!this.requireAuth(
+        'Entre na sua conta para salvar "' + track.title + '" nos seus favoritos!',
+        { type: 'likeTrack', payload: track }
+      )) {
         return;
       }
 
       const idx = this.likedTracks.findIndex(t => t.id === track.id);
       if (idx > -1) {
         this.likedTracks.splice(idx, 1);
-        this.showToast(`"${track.title}" removida dos favoritos.`);
+        this.showToast('"' + track.title + '" removida dos favoritos.');
       } else {
         this.likedTracks.push(track);
-        this.showToast(`"${track.title}" salva nos favoritos!`);
+        this.showToast('"' + track.title + '" salva nos favoritos!');
       }
       this.syncUserDataToCloud();
     },
@@ -489,27 +519,30 @@ createApp({
     },
 
     toggleFavoriteArtist(artist) {
-      if (!this.requireAuth(`Faça login para favoritar "${artist.name}"!`)) {
+      if (!this.requireAuth(
+        'Entre na sua conta para favoritar "' + artist.name + '"!',
+        { type: 'favoriteArtist', payload: artist }
+      )) {
         return;
       }
 
       const idx = this.favoriteArtists.findIndex(a => a.name.toLowerCase() === artist.name.toLowerCase());
       if (idx > -1) {
         this.favoriteArtists.splice(idx, 1);
-        this.showToast(`"${artist.name}" removido dos favoritos.`);
+        this.showToast('"' + artist.name + '" removido dos favoritos.');
       } else {
         this.favoriteArtists.push(artist);
-        this.showToast(`"${artist.name}" adicionado aos artistas favoritos!`);
+        this.showToast('"' + artist.name + '" adicionado aos artistas favoritos!');
       }
       this.syncUserDataToCloud();
     },
 
     // --- PLAYLIST MANAGEMENT ---
     handleOpenCreatePlaylist() {
-      if (!this.requireAuth('Faça login para criar suas próprias playlists!')) {
+      if (!this.requireAuth('Faça login para criar suas próprias playlists!', { type: 'createPlaylist' })) {
         return;
       }
-      this.openModal('createPlaylist');
+      this.activeModal = 'createPlaylist';
     },
 
     createPlaylist() {
@@ -524,18 +557,18 @@ createApp({
       };
 
       this.playlists.push(pl);
-      this.showToast(`Playlist "${pl.name}" criada!`);
+      this.showToast('Playlist "' + pl.name + '" criada!');
       this.newPlaylistForm = { name: '', description: '' };
       this.closeModal();
       this.syncUserDataToCloud();
     },
 
     openAddToPlaylistModal(track) {
-      if (!this.requireAuth('Faça login para adicionar músicas às suas playlists!')) {
+      if (!this.requireAuth('Faça login para adicionar músicas às suas playlists!', { type: 'addToPlaylist', payload: track })) {
         return;
       }
-      this.selectedTrackForPlaylist = track;
-      this.openModal('addToPlaylist');
+      this.trackToAdd = track;
+      this.activeModal = 'addToPlaylist';
     },
 
     addTrackToPlaylist(playlistId, track) {
@@ -543,10 +576,10 @@ createApp({
       if (pl) {
         if (!pl.tracks.some(t => t.id === track.id)) {
           pl.tracks.push(track);
-          this.showToast(`Música adicionada à playlist "${pl.name}"`);
+          this.showToast('Música adicionada à playlist "' + pl.name + '"');
           this.syncUserDataToCloud();
         } else {
-          this.showToast("Esta música já está na playlist.");
+          this.showToast('Esta música já está na playlist.');
         }
       }
       this.closeModal();
@@ -556,7 +589,7 @@ createApp({
       const pl = this.playlists.find(p => p.id === playlistId);
       if (pl) {
         pl.tracks = pl.tracks.filter(t => t.id !== trackId);
-        this.showToast("Música removida da playlist.");
+        this.showToast('Música removida da playlist.');
         this.syncUserDataToCloud();
       }
     },
@@ -564,7 +597,7 @@ createApp({
     deletePlaylist(playlistId) {
       this.playlists = this.playlists.filter(p => p.id !== playlistId);
       this.currentView = 'library';
-      this.showToast("Playlist excluída.");
+      this.showToast('Playlist excluída.');
       this.syncUserDataToCloud();
     },
 
@@ -573,9 +606,10 @@ createApp({
     // =====================================================================
     async restoreUserSession() {
       if (supabaseClient) {
-        const { data } = await supabaseClient.auth.getSession();
-        if (data?.session?.user) {
-          await this.loadSupabaseProfile(data.session.user);
+        const res = await supabaseClient.auth.getSession();
+        const sessionUser = res && res.data && res.data.session && res.data.session.user;
+        if (sessionUser) {
+          await this.loadSupabaseProfile(sessionUser);
         }
       } else {
         const savedEmail = localStorage.getItem('nile_active_email');
@@ -593,17 +627,17 @@ createApp({
         if (supabaseClient) {
           if (this.authMode === 'register') {
             const displayName = this.authForm.displayName || this.authForm.email.split('@')[0];
-            const { data, error } = await supabaseClient.auth.signUp({
+            const res = await supabaseClient.auth.signUp({
               email: this.authForm.email,
               password: this.authForm.password,
               options: { data: { display_name: displayName } }
             });
 
-            if (error) throw error;
+            if (res.error) throw res.error;
 
-            if (data?.user) {
+            if (res.data && res.data.user) {
               await supabaseClient.from('profiles').upsert({
-                id: data.user.id,
+                id: res.data.user.id,
                 display_name: displayName,
                 avatar_url: '',
                 bio: '',
@@ -611,26 +645,28 @@ createApp({
                 favorite_artists: [],
                 playlists: this.playlists
               });
-              await this.loadSupabaseProfile(data.user);
-              this.showToast(`Conta criada! Bem-vindo ao Nile, ${displayName}!`);
+              await this.loadSupabaseProfile(res.data.user);
+              this.showToast('Conta criada! Bem-vindo ao Nile, ' + displayName + '!');
               this.closeModal();
+              this.executePendingAction();
             }
           } else {
-            const { data, error } = await supabaseClient.auth.signInWithPassword({
+            const res = await supabaseClient.auth.signInWithPassword({
               email: this.authForm.email,
               password: this.authForm.password
             });
 
-            if (error) throw error;
+            if (res.error) throw res.error;
 
-            if (data?.user) {
-              await this.loadSupabaseProfile(data.user);
-              this.showToast(`Bem-vindo de volta, ${this.user.displayName}!`);
+            if (res.data && res.data.user) {
+              await this.loadSupabaseProfile(res.data.user);
+              this.showToast('Bem-vindo de volta, ' + this.user.displayName + '!');
               this.closeModal();
+              this.executePendingAction();
             }
           }
         } else {
-          // Fallback local caso ainda não tenha colado as chaves do Supabase
+          // Fallback local caso as chaves do Supabase ainda não estejam preenchidas
           const email = this.authForm.email.toLowerCase();
           const existing = localStorage.getItem('nile_profile_' + email);
 
@@ -650,27 +686,30 @@ createApp({
 
           localStorage.setItem('nile_active_email', email);
           this.loadLocalProfile(email);
-          this.showToast(`Bem-vindo ao Nile, ${this.user.displayName}!`);
+          this.showToast('Bem-vindo ao Nile, ' + this.user.displayName + '!');
           this.closeModal();
+          this.executePendingAction();
         }
 
         this.authForm = { displayName: '', email: '', password: '' };
         this.authPromptMessage = '';
       } catch (err) {
-        this.showToast('Erro: ' + (err.message || 'Falha na autenticação.'));
+        this.showToast('Erro: ' + (err.message || 'Falha na autenticação.'), 'error');
       } finally {
         this.authLoading = false;
       }
     },
 
     async loadSupabaseProfile(authUser) {
-      const { data: profile } = await supabaseClient
+      const res = await supabaseClient
         .from('profiles')
         .select('*')
         .eq('id', authUser.id)
         .single();
 
-      const fallbackName = authUser.user_metadata?.display_name || authUser.email.split('@')[0];
+      const profile = res && res.data;
+      const metaName = authUser.user_metadata && authUser.user_metadata.display_name;
+      const fallbackName = metaName || authUser.email.split('@')[0];
 
       if (profile) {
         this.user = {
@@ -682,13 +721,15 @@ createApp({
         };
 
         const likedIds = Array.isArray(profile.liked_track_ids) ? profile.liked_track_ids : [];
-        this.likedTracks = this.catalogTracks.filter(t => likedIds.includes(t.id));
+        this.likedTracks = this.catalogTracks.filter(t => likedIds.indexOf(t.id) !== -1);
 
         this.favoriteArtists = Array.isArray(profile.favorite_artists) ? profile.favorite_artists : [];
 
         if (Array.isArray(profile.playlists)) {
           this.playlists = profile.playlists.map(pl => ({
-            ...pl,
+            id: pl.id,
+            name: pl.name,
+            description: pl.description || '',
             tracks: (pl.trackIds || [])
               .map(id => this.catalogTracks.find(t => t.id === id))
               .filter(Boolean)
@@ -745,7 +786,11 @@ createApp({
         });
       } else {
         const payload = {
-          ...this.user,
+          id: this.user.id,
+          email: this.user.email,
+          displayName: this.user.displayName,
+          avatarUrl: this.user.avatarUrl,
+          bio: this.user.bio,
           likedTracks: this.likedTracks,
           favoriteArtists: this.favoriteArtists,
           playlists: this.playlists
@@ -764,15 +809,16 @@ createApp({
         avatarFile: null,
         avatarPreview: ''
       };
-      this.openModal('editProfile');
+      this.activeModal = 'editProfile';
     },
 
-    handleAvatarFileChange(event) {
-      const file = event.target.files?.[0];
+    onAvatarFileSelected(event) {
+      const files = event.target && event.target.files;
+      const file = files && files[0];
       if (!file) return;
 
       if (file.size > 3 * 1024 * 1024) {
-        this.showToast("Escolha uma imagem menor que 3 MB.");
+        this.showToast('Escolha uma imagem menor que 3 MB.', 'error');
         return;
       }
 
@@ -794,19 +840,19 @@ createApp({
         if (this.profileForm.avatarFile) {
           if (supabaseClient) {
             const fileExt = this.profileForm.avatarFile.name.split('.').pop();
-            const filePath = `${this.user.id}-${Date.now()}.${fileExt}`;
+            const filePath = this.user.id + '-' + Date.now() + '.' + fileExt;
 
-            const { error: uploadError } = await supabaseClient.storage
+            const uploadRes = await supabaseClient.storage
               .from('avatars')
               .upload(filePath, this.profileForm.avatarFile, { upsert: true });
 
-            if (uploadError) throw uploadError;
+            if (uploadRes.error) throw uploadRes.error;
 
-            const { data: publicData } = supabaseClient.storage
+            const pubRes = supabaseClient.storage
               .from('avatars')
               .getPublicUrl(filePath);
 
-            finalAvatarUrl = publicData.publicUrl;
+            finalAvatarUrl = pubRes.data.publicUrl;
           } else if (this.profileForm.avatarPreview) {
             finalAvatarUrl = this.profileForm.avatarPreview;
           }
@@ -817,10 +863,10 @@ createApp({
         this.user.avatarUrl = finalAvatarUrl;
 
         await this.syncUserDataToCloud();
-        this.showToast("Perfil atualizado com sucesso!");
+        this.showToast('Perfil atualizado com sucesso!');
         this.closeModal();
       } catch (err) {
-        this.showToast("Erro ao salvar perfil: " + (err.message || "verifique o bucket 'avatars'"));
+        this.showToast('Erro ao salvar perfil: ' + (err.message || "verifique o bucket 'avatars'"), 'error');
       } finally {
         this.profileSaving = false;
       }
@@ -838,26 +884,26 @@ createApp({
       this.playlists = [
         { id: 'pl-1', name: 'Favoritas do Nilo', description: 'Seleção suave para relaxar', tracks: [] }
       ];
-      this.showToast("Sua sessão foi encerrada.");
+      this.showToast('Sua sessão foi encerrada.');
     },
 
     // --- UI HELPERS ---
-    openModal(modalName) {
-      this.activeModal = modalName;
-    },
-
     closeModal() {
       this.activeModal = null;
-      this.selectedTrackForPlaylist = null;
+      this.trackToAdd = null;
       this.authPromptMessage = '';
     },
 
-    showToast(message) {
-      const id = Date.now();
-      this.toasts.push({ id, message });
-      setTimeout(() => {
-        this.toasts = this.toasts.filter(t => t.id !== id);
-      }, 3000);
+    showToast(message, type) {
+      if (this.toastTimer) clearTimeout(this.toastTimer);
+      this.toast = {
+        visible: true,
+        message: message,
+        type: type || 'success'
+      };
+      this.toastTimer = setTimeout(() => {
+        this.toast.visible = false;
+      }, 3200);
     }
   }
 }).mount('#app');
