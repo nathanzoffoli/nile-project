@@ -1,132 +1,132 @@
 /* Barras de rolagem personalizadas */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+width: 6px;
+height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #090B10;
+background: #090B10;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #2A3142;
-  border-radius: 3px;
+background: #2A3142;
+border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #3B445B;
+background: #3B445B;
 }
 
 /* Controles deslizantes de tempo e volume (Desktop e Mobile) */
 input[type="range"] {
-  -webkit-appearance: none;
-  appearance: none;
-  background: transparent;
-  cursor: pointer;
-  touch-action: manipulation;
+-webkit-appearance: none;
+appearance: none;
+background: transparent;
+cursor: pointer;
+touch-action: manipulation;
 }
 
 input[type="range"]::-webkit-slider-runnable-track {
-  background: #334155;
-  height: 5px;
-  border-radius: 3px;
+background: #334155;
+height: 5px;
+border-radius: 3px;
 }
 
 input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  margin-top: -5px;
-  background-color: #ffffff;
-  height: 15px;
-  width: 15px;
-  border-radius: 50%;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-  transition: transform 0.1s ease, background-color 0.1s ease;
+-webkit-appearance: none;
+appearance: none;
+margin-top: -5px;
+background-color: #ffffff;
+height: 15px;
+width: 15px;
+border-radius: 50%;
+box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+transition: transform 0.1s ease, background-color 0.1s ease;
 }
 
 @media (min-width: 768px) {
-  input[type="range"]::-webkit-slider-runnable-track {
-    height: 4px;
-  }
-  input[type="range"]::-webkit-slider-thumb {
-    margin-top: -4px;
-    height: 12px;
-    width: 12px;
-  }
+input[type="range"]::-webkit-slider-runnable-track {
+height: 4px;
+}
+input[type="range"]::-webkit-slider-thumb {
+margin-top: -4px;
+height: 12px;
+width: 12px;
+}
 }
 
 input[type="range"]:hover::-webkit-slider-runnable-track,
 input[type="range"]:active::-webkit-slider-runnable-track {
-  background: #FDE047;
+background: #FDE047;
 }
 
 input[type="range"]:hover::-webkit-slider-thumb,
 input[type="range"]:active::-webkit-slider-thumb {
-  transform: scale(1.2);
-  background-color: #FDE047;
+transform: scale(1.2);
+background-color: #FDE047;
 }
 
 /* Animação do Equalizador na capa em reprodução */
 .eq-bar {
-  animation: eq 0.8s ease-in-out infinite alternate;
+animation: eq 0.8s ease-in-out infinite alternate;
 }
 
 .eq-bar:nth-child(1) {
-  animation-delay: 0.1s;
+animation-delay: 0.1s;
 }
 
 .eq-bar:nth-child(2) {
-  animation-delay: 0.3s;
+animation-delay: 0.3s;
 }
 
 .eq-bar:nth-child(3) {
-  animation-delay: 0.2s;
+animation-delay: 0.2s;
 }
 
 .eq-bar:nth-child(4) {
-  animation-delay: 0.4s;
+animation-delay: 0.4s;
 }
 
 @keyframes eq {
-  0% {
-    height: 4px;
-  }
-  100% {
-    height: 16px;
-  }
+0% {
+height: 4px;
+}
+100% {
+height: 16px;
+}
 }
 
 /* Transição suave entre telas e modais */
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+from {
+opacity: 0;
+transform: translateY(4px);
+}
+to {
+opacity: 1;
+transform: translateY(0);
+}
 }
 
 .animate-fadeIn {
-  animation: fadeIn 0.2s ease-out;
+animation: fadeIn 0.2s ease-out;
 }
 
 /* Notificação Toast */
 .toast-enter-active,
 .toast-leave-active {
-  transition: all 0.25s ease;
+transition: all 0.25s ease;
 }
 
 .toast-enter-from,
 .toast-leave-to {
-  opacity: 0;
-  transform: translateY(10px);
+opacity: 0;
+transform: translateY(10px);
 }
 
 /* Efeito Glassmorphism da Barra do Player */
 .glass-player {
-  background: rgba(17, 20, 29, 0.96);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+background: rgba(17, 20, 29, 0.96);
+backdrop-filter: blur(18px);
+-webkit-backdrop-filter: blur(18px);
 }
