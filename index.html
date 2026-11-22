@@ -47,9 +47,116 @@
 
   <!-- Supabase JS CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- =====================================================================
+       SEÇÃO 1: STYLE (ESTILOS CUSTOMIZADOS E ANIMAÇÕES DO NILE)
+       ===================================================================== -->
+  <style>
+    /* Barras de rolagem personalizadas */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #090B10;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #2A3142;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #3B445B;
+    }
+
+    /* Controles deslizantes de tempo e volume (Desktop e Mobile) */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      background: transparent;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+    input[type="range"]::-webkit-slider-runnable-track {
+      background: #334155;
+      height: 5px;
+      border-radius: 3px;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      margin-top: -5px;
+      background-color: #ffffff;
+      height: 15px;
+      width: 15px;
+      border-radius: 50%;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+      transition: transform 0.1s ease, background-color 0.1s ease;
+    }
+    @media (min-width: 768px) {
+      input[type="range"]::-webkit-slider-runnable-track {
+        height: 4px;
+      }
+      input[type="range"]::-webkit-slider-thumb {
+        margin-top: -4px;
+        height: 12px;
+        width: 12px;
+      }
+    }
+    input[type="range"]:hover::-webkit-slider-runnable-track,
+    input[type="range"]:active::-webkit-slider-runnable-track {
+      background: #FDE047;
+    }
+    input[type="range"]:hover::-webkit-slider-thumb,
+    input[type="range"]:active::-webkit-slider-thumb {
+      transform: scale(1.2);
+      background-color: #FDE047;
+    }
+
+    /* Animação do Equalizador na capa em reprodução */
+    .eq-bar {
+      animation: eq 0.8s ease-in-out infinite alternate;
+    }
+    .eq-bar:nth-child(1) { animation-delay: 0.1s; }
+    .eq-bar:nth-child(2) { animation-delay: 0.3s; }
+    .eq-bar:nth-child(3) { animation-delay: 0.2s; }
+    .eq-bar:nth-child(4) { animation-delay: 0.4s; }
+
+    @keyframes eq {
+      0% { height: 4px; }
+      100% { height: 16px; }
+    }
+
+    /* Transição suave entre telas e modais */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fadeIn {
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    /* Notificação Toast */
+    .toast-enter-active, .toast-leave-active {
+      transition: all 0.25s ease;
+    }
+    .toast-enter-from, .toast-leave-to {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    /* Efeito Glassmorphism da Barra do Player */
+    .glass-player {
+      background: rgba(17, 20, 29, 0.96);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+  </style>
 </head>
 <body class="bg-nile-darkBg text-slate-100 font-sans h-[100dvh] overflow-hidden antialiased select-none">
 
+  <!-- =====================================================================
+       SEÇÃO 2: INDEX (ESTRUTURA VISUAL, NAVEGAÇÃO, TELAS E MODAIS)
+       ===================================================================== -->
   <div id="app" class="flex flex-col h-[100dvh] overflow-hidden">
 
     <!-- LAYOUT PRINCIPAL (Sidebar + Área de Conteúdo) -->
@@ -364,186 +471,219 @@
 
           </div>
 
-          <!-- TELA 2: BUSCA UNIFICADA (ARTISTAS, ÁLBUNS E MÚSICAS) -->
+          <!-- TELA 2: BUSCA UNIFICADA (SOMENTE ARTISTAS AO ABRIR; PADRÃO COMPLETO AO PESQUISAR) -->
           <div v-if="currentView === 'search'" class="space-y-6 animate-fadeIn">
             <div>
               <h2 class="text-2xl sm:text-3xl font-black mb-1">Buscar no Catálogo</h2>
               <p class="text-xs text-slate-400">
-                {{ searchQuery ? 'Resultados para "' + searchQuery + '"' : 'Explore todos os artistas, álbuns e músicas disponíveis' }}
+                {{ (searchQuery || '').trim() ? 'Resultados para "' + searchQuery + '"' : 'Selecione um artista ou digite acima para buscar artistas, álbuns e músicas' }}
               </p>
             </div>
 
-            <!-- Filtros de Categoria -->
-            <div class="flex items-center gap-2 overflow-x-auto pb-1">
-              <button 
-                @click="searchFilterTab = 'all'"
-                :class="searchFilterTab === 'all' ? 'bg-nile-yellow text-nile-darkBg font-bold' : 'bg-nile-card text-slate-300 hover:bg-nile-hover border border-nile-border'"
-                class="px-4 py-1.5 rounded-full text-xs transition shrink-0"
-              >
-                Tudo ({{ matchedArtists.length + matchedAlbums.length + searchResults.length }})
-              </button>
-              <button 
-                @click="searchFilterTab = 'artists'"
-                :class="searchFilterTab === 'artists' ? 'bg-nile-blue text-nile-darkBg font-bold' : 'bg-nile-card text-slate-300 hover:bg-nile-hover border border-nile-border'"
-                class="px-4 py-1.5 rounded-full text-xs transition shrink-0"
-              >
-                Artistas ({{ matchedArtists.length }})
-              </button>
-              <button 
-                @click="searchFilterTab = 'albums'"
-                :class="searchFilterTab === 'albums' ? 'bg-nile-yellow text-nile-darkBg font-bold' : 'bg-nile-card text-slate-300 hover:bg-nile-hover border border-nile-border'"
-                class="px-4 py-1.5 rounded-full text-xs transition shrink-0"
-              >
-                Álbuns ({{ matchedAlbums.length }})
-              </button>
-              <button 
-                @click="searchFilterTab = 'tracks'"
-                :class="searchFilterTab === 'tracks' ? 'bg-nile-yellow text-nile-darkBg font-bold' : 'bg-nile-card text-slate-300 hover:bg-nile-hover border border-nile-border'"
-                class="px-4 py-1.5 rounded-full text-xs transition shrink-0"
-              >
-                Músicas ({{ searchResults.length }})
-              </button>
+            <!-- EXIBIÇÃO AO CLICAR EM BUSCAR CATÁLOGO (SEM PESQUISA): SOMENTE ARTISTAS -->
+            <div v-if="!(searchQuery || '').trim()" class="space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="text-lg sm:text-xl font-black flex items-center space-x-2">
+                  <i class="fa-solid fa-microphone-lines text-nile-blue text-base"></i>
+                  <span>Artistas</span>
+                </h3>
+                <span class="text-xs text-slate-400">{{ popularArtists.length }} artista(s)</span>
+              </div>
+
+              <div v-if="popularArtists.length === 0" class="p-12 text-center bg-nile-card rounded-2xl border border-nile-border text-slate-500 text-sm">
+                Nenhum artista disponível no catálogo.
+              </div>
+
+              <div v-else class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+                <div 
+                  v-for="artist in popularArtists" 
+                  :key="'cat-art-' + artist.name"
+                  @click="openArtistPage(artist.name)"
+                  class="group bg-nile-card hover:bg-nile-hover p-3 sm:p-4 rounded-2xl border border-nile-border transition flex flex-col items-center text-center cursor-pointer"
+                >
+                  <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden mb-2.5 bg-nile-hover shadow-lg border-2 border-transparent group-hover:border-nile-blue transition">
+                    <img :src="artist.image" :alt="artist.name" class="w-full h-full object-cover group-hover:scale-110 transition duration-300" />
+                  </div>
+                  <h4 class="font-bold text-xs sm:text-sm text-white truncate w-full group-hover:text-nile-yellow transition">{{ artist.name }}</h4>
+                  <p class="text-[11px] text-nile-blue mt-0.5 truncate w-full">{{ artist.genre }}</p>
+                </div>
+              </div>
             </div>
 
-            <!-- Estado Vazio -->
-            <div v-if="matchedArtists.length === 0 && matchedAlbums.length === 0 && searchResults.length === 0" class="p-12 sm:p-16 text-center bg-nile-card rounded-2xl border border-nile-border text-slate-500">
-              <i class="fa-solid fa-magnifying-glass text-4xl mb-3 text-slate-600 block"></i>
-              <p class="text-sm font-semibold">Nenhum artista, álbum ou música encontrado para "{{ searchQuery }}".</p>
-              <p class="text-xs text-slate-600 mt-1">Tente buscar por outro termo ou limpe a barra de busca.</p>
-            </div>
-
+            <!-- EXIBIÇÃO QUANDO HÁ PESQUISA DIGITADA: MANTÉM O PADRÃO COMPLETO -->
             <template v-else>
-              <!-- Artistas Encontrados -->
-              <div v-if="(searchFilterTab === 'all' || searchFilterTab === 'artists') && matchedArtists.length > 0" class="space-y-3">
-                <div class="flex items-center justify-between">
-                  <h3 class="text-lg sm:text-xl font-black flex items-center space-x-2">
-                    <i class="fa-solid fa-microphone-lines text-nile-blue text-base"></i>
-                    <span>Artistas</span>
-                  </h3>
-                  <span class="text-xs text-slate-400">{{ matchedArtists.length }} encontrado(s)</span>
-                </div>
-
-                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
-                  <div 
-                    v-for="artist in matchedArtists" 
-                    :key="'sr-art-' + artist.name"
-                    @click="openArtistPage(artist.name)"
-                    class="group bg-nile-card hover:bg-nile-hover p-3 sm:p-4 rounded-2xl border border-nile-border transition flex flex-col items-center text-center cursor-pointer"
-                  >
-                    <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden mb-2.5 bg-nile-hover shadow-lg border-2 border-transparent group-hover:border-nile-blue transition">
-                      <img :src="artist.image" :alt="artist.name" class="w-full h-full object-cover group-hover:scale-110 transition duration-300" />
-                    </div>
-                    <h4 class="font-bold text-xs sm:text-sm text-white truncate w-full group-hover:text-nile-yellow transition">{{ artist.name }}</h4>
-                    <span class="text-[10px] text-slate-400 bg-nile-darkBg px-2 py-0.5 rounded-full mt-1 border border-nile-border">Artista</span>
-                  </div>
-                </div>
+              <!-- Filtros de Categoria -->
+              <div class="flex items-center gap-2 overflow-x-auto pb-1">
+                <button 
+                  @click="searchFilterTab = 'all'"
+                  :class="searchFilterTab === 'all' ? 'bg-nile-yellow text-nile-darkBg font-bold' : 'bg-nile-card text-slate-300 hover:bg-nile-hover border border-nile-border'"
+                  class="px-4 py-1.5 rounded-full text-xs transition shrink-0"
+                >
+                  Tudo ({{ matchedArtists.length + matchedAlbums.length + searchResults.length }})
+                </button>
+                <button 
+                  @click="searchFilterTab = 'artists'"
+                  :class="searchFilterTab === 'artists' ? 'bg-nile-blue text-nile-darkBg font-bold' : 'bg-nile-card text-slate-300 hover:bg-nile-hover border border-nile-border'"
+                  class="px-4 py-1.5 rounded-full text-xs transition shrink-0"
+                >
+                  Artistas ({{ matchedArtists.length }})
+                </button>
+                <button 
+                  @click="searchFilterTab = 'albums'"
+                  :class="searchFilterTab === 'albums' ? 'bg-nile-yellow text-nile-darkBg font-bold' : 'bg-nile-card text-slate-300 hover:bg-nile-hover border border-nile-border'"
+                  class="px-4 py-1.5 rounded-full text-xs transition shrink-0"
+                >
+                  Álbuns ({{ matchedAlbums.length }})
+                </button>
+                <button 
+                  @click="searchFilterTab = 'tracks'"
+                  :class="searchFilterTab === 'tracks' ? 'bg-nile-yellow text-nile-darkBg font-bold' : 'bg-nile-card text-slate-300 hover:bg-nile-hover border border-nile-border'"
+                  class="px-4 py-1.5 rounded-full text-xs transition shrink-0"
+                >
+                  Músicas ({{ searchResults.length }})
+                </button>
               </div>
 
-              <!-- Álbuns Encontrados -->
-              <div v-if="(searchFilterTab === 'all' || searchFilterTab === 'albums') && matchedAlbums.length > 0" class="space-y-3">
-                <div class="flex items-center justify-between">
-                  <h3 class="text-lg sm:text-xl font-black flex items-center space-x-2">
-                    <i class="fa-solid fa-compact-disc text-nile-yellow text-base"></i>
-                    <span>Álbuns</span>
-                  </h3>
-                  <span class="text-xs text-slate-400">{{ matchedAlbums.length }} encontrado(s)</span>
-                </div>
-
-                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
-                  <div 
-                    v-for="album in matchedAlbums" 
-                    :key="'sr-alb-' + album.name + '-' + album.artist"
-                    @click="openAlbumPage(album)"
-                    class="group bg-nile-card hover:bg-nile-hover p-3 sm:p-3.5 rounded-2xl border border-nile-border transition cursor-pointer flex flex-col"
-                  >
-                    <div class="relative aspect-square rounded-xl overflow-hidden mb-3 bg-nile-hover shadow-lg">
-                      <img :src="album.cover" :alt="album.name" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
-                      <button 
-                        @click.stop="playAlbum(album.tracks)"
-                        class="absolute bottom-2 right-2 w-9 h-9 rounded-full bg-nile-yellow text-nile-darkBg flex items-center justify-center shadow-lg opacity-95 sm:opacity-0 sm:group-hover:opacity-100 transition active:scale-95"
-                        title="Tocar Álbum"
-                      >
-                        <i class="fa-solid fa-play translate-x-0.5 text-xs"></i>
-                      </button>
-                    </div>
-                    <h4 class="font-bold text-xs sm:text-sm text-white truncate group-hover:text-nile-yellow transition">{{ album.name }}</h4>
-                    <p class="text-xs text-nile-blue truncate mt-0.5 hover:underline" @click.stop="openArtistPage(album.artist)">{{ album.artist }}</p>
-                    <p class="text-[10px] text-slate-500 mt-1">{{ album.tracks.length }} {{ album.tracks.length === 1 ? 'faixa' : 'faixas' }}</p>
-                  </div>
-                </div>
+              <!-- Estado Vazio -->
+              <div v-if="matchedArtists.length === 0 && matchedAlbums.length === 0 && searchResults.length === 0" class="p-12 sm:p-16 text-center bg-nile-card rounded-2xl border border-nile-border text-slate-500">
+                <i class="fa-solid fa-magnifying-glass text-4xl mb-3 text-slate-600 block"></i>
+                <p class="text-sm font-semibold">Nenhum artista, álbum ou música encontrado para "{{ searchQuery }}".</p>
+                <p class="text-xs text-slate-600 mt-1">Tente buscar por outro termo ou limpe a barra de busca.</p>
               </div>
 
-              <!-- Músicas Encontradas -->
-              <div v-if="(searchFilterTab === 'all' || searchFilterTab === 'tracks') && searchResults.length > 0" class="space-y-3">
-                <div class="flex items-center justify-between">
-                  <h3 class="text-lg sm:text-xl font-black flex items-center space-x-2">
-                    <i class="fa-solid fa-music text-nile-yellow text-base"></i>
-                    <span>Músicas</span>
-                  </h3>
-                  <span class="text-xs text-slate-400">{{ searchResults.length }} faixa(s)</span>
-                </div>
-
-                <div class="bg-nile-card rounded-2xl border border-nile-border overflow-hidden">
-                  <div class="p-3 sm:p-4 border-b border-nile-border/60 flex items-center justify-between text-[11px] text-slate-400 font-bold">
-                    <span>FAIXA / ARTISTA / ÁLBUM</span>
-                    <span>AÇÕES</span>
+              <template v-else>
+                <!-- Artistas Encontrados -->
+                <div v-if="(searchFilterTab === 'all' || searchFilterTab === 'artists') && matchedArtists.length > 0" class="space-y-3">
+                  <div class="flex items-center justify-between">
+                    <h3 class="text-lg sm:text-xl font-black flex items-center space-x-2">
+                      <i class="fa-solid fa-microphone-lines text-nile-blue text-base"></i>
+                      <span>Artistas</span>
+                    </h3>
+                    <span class="text-xs text-slate-400">{{ matchedArtists.length }} encontrado(s)</span>
                   </div>
 
-                  <div class="divide-y divide-nile-border/40">
+                  <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
                     <div 
-                      v-for="(track, idx) in searchResults" 
-                      :key="'sr-' + track.id + '-' + idx"
-                      @click="playTrack(track)"
-                      class="flex items-center justify-between p-3 sm:p-3.5 hover:bg-nile-hover transition group cursor-pointer gap-2"
+                      v-for="artist in matchedArtists" 
+                      :key="'sr-art-' + artist.name"
+                      @click="openArtistPage(artist.name)"
+                      class="group bg-nile-card hover:bg-nile-hover p-3 sm:p-4 rounded-2xl border border-nile-border transition flex flex-col items-center text-center cursor-pointer"
                     >
-                      <div class="flex items-center space-x-3 sm:space-x-4 min-w-0 flex-1">
-                        <span class="w-5 text-center text-xs text-slate-500 font-bold group-hover:text-white shrink-0">
-                          <i v-if="currentTrack && currentTrack.id === track.id && isPlaying" class="fa-solid fa-volume-high text-nile-yellow"></i>
-                          <span v-else>{{ idx + 1 }}</span>
-                        </span>
+                      <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden mb-2.5 bg-nile-hover shadow-lg border-2 border-transparent group-hover:border-nile-blue transition">
+                        <img :src="artist.image" :alt="artist.name" class="w-full h-full object-cover group-hover:scale-110 transition duration-300" />
+                      </div>
+                      <h4 class="font-bold text-xs sm:text-sm text-white truncate w-full group-hover:text-nile-yellow transition">{{ artist.name }}</h4>
+                      <span class="text-[10px] text-slate-400 bg-nile-darkBg px-2 py-0.5 rounded-full mt-1 border border-nile-border">Artista</span>
+                    </div>
+                  </div>
+                </div>
 
-                        <img :src="track.cover" :alt="track.title" class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl object-cover shadow shrink-0" />
+                <!-- Álbuns Encontrados -->
+                <div v-if="(searchFilterTab === 'all' || searchFilterTab === 'albums') && matchedAlbums.length > 0" class="space-y-3">
+                  <div class="flex items-center justify-between">
+                    <h3 class="text-lg sm:text-xl font-black flex items-center space-x-2">
+                      <i class="fa-solid fa-compact-disc text-nile-yellow text-base"></i>
+                      <span>Álbuns</span>
+                    </h3>
+                    <span class="text-xs text-slate-400">{{ matchedAlbums.length }} encontrado(s)</span>
+                  </div>
 
-                        <div class="min-w-0 flex-1">
-                          <p class="font-bold text-xs sm:text-sm text-white truncate group-hover:text-nile-yellow transition" :class="currentTrack && currentTrack.id === track.id ? 'text-nile-yellow' : ''">
-                            {{ track.title }}
-                          </p>
-                          <p class="text-[11px] sm:text-xs text-slate-400 truncate">
-                            <span class="text-nile-blue hover:underline" @click.stop="openArtistPage(track.artist)">{{ track.artist }}</span> 
-                            <span v-if="track.album"> • <span class="hover:underline" @click.stop="openAlbumByName(track.album, track.artist)">{{ track.album }}</span></span>
-                          </p>
+                  <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+                    <div 
+                      v-for="album in matchedAlbums" 
+                      :key="'sr-alb-' + album.name + '-' + album.artist"
+                      @click="openAlbumPage(album)"
+                      class="group bg-nile-card hover:bg-nile-hover p-3 sm:p-3.5 rounded-2xl border border-nile-border transition cursor-pointer flex flex-col"
+                    >
+                      <div class="relative aspect-square rounded-xl overflow-hidden mb-3 bg-nile-hover shadow-lg">
+                        <img :src="album.cover" :alt="album.name" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+                        <button 
+                          @click.stop="playAlbum(album.tracks)"
+                          class="absolute bottom-2 right-2 w-9 h-9 rounded-full bg-nile-yellow text-nile-darkBg flex items-center justify-center shadow-lg opacity-95 sm:opacity-0 sm:group-hover:opacity-100 transition active:scale-95"
+                          title="Tocar Álbum"
+                        >
+                          <i class="fa-solid fa-play translate-x-0.5 text-xs"></i>
+                        </button>
+                      </div>
+                      <h4 class="font-bold text-xs sm:text-sm text-white truncate group-hover:text-nile-yellow transition">{{ album.name }}</h4>
+                      <p class="text-xs text-nile-blue truncate mt-0.5 hover:underline" @click.stop="openArtistPage(album.artist)">{{ album.artist }}</p>
+                      <p class="text-[10px] text-slate-500 mt-1">{{ album.tracks.length }} {{ album.tracks.length === 1 ? 'faixa' : 'faixas' }}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Músicas Encontradas -->
+                <div v-if="(searchFilterTab === 'all' || searchFilterTab === 'tracks') && searchResults.length > 0" class="space-y-3">
+                  <div class="flex items-center justify-between">
+                    <h3 class="text-lg sm:text-xl font-black flex items-center space-x-2">
+                      <i class="fa-solid fa-music text-nile-yellow text-base"></i>
+                      <span>Músicas</span>
+                    </h3>
+                    <span class="text-xs text-slate-400">{{ searchResults.length }} faixa(s)</span>
+                  </div>
+
+                  <div class="bg-nile-card rounded-2xl border border-nile-border overflow-hidden">
+                    <div class="p-3 sm:p-4 border-b border-nile-border/60 flex items-center justify-between text-[11px] text-slate-400 font-bold">
+                      <span>FAIXA / ARTISTA / ÁLBUM</span>
+                      <span>AÇÕES</span>
+                    </div>
+
+                    <div class="divide-y divide-nile-border/40">
+                      <div 
+                        v-for="(track, idx) in searchResults" 
+                        :key="'sr-' + track.id + '-' + idx"
+                        @click="playTrack(track)"
+                        class="flex items-center justify-between p-3 sm:p-3.5 hover:bg-nile-hover transition group cursor-pointer gap-2"
+                      >
+                        <div class="flex items-center space-x-3 sm:space-x-4 min-w-0 flex-1">
+                          <span class="w-5 text-center text-xs text-slate-500 font-bold group-hover:text-white shrink-0">
+                            <i v-if="currentTrack && currentTrack.id === track.id && isPlaying" class="fa-solid fa-volume-high text-nile-yellow"></i>
+                            <span v-else>{{ idx + 1 }}</span>
+                          </span>
+
+                          <img :src="track.cover" :alt="track.title" class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl object-cover shadow shrink-0" />
+
+                          <div class="min-w-0 flex-1">
+                            <p class="font-bold text-xs sm:text-sm text-white truncate group-hover:text-nile-yellow transition" :class="currentTrack && currentTrack.id === track.id ? 'text-nile-yellow' : ''">
+                              {{ track.title }}
+                            </p>
+                            <p class="text-[11px] sm:text-xs text-slate-400 truncate">
+                              <span class="text-nile-blue hover:underline" @click.stop="openArtistPage(track.artist)">{{ track.artist }}</span> 
+                              <span v-if="track.album"> • <span class="hover:underline" @click.stop="openAlbumByName(track.album, track.artist)">{{ track.album }}</span></span>
+                            </p>
+                          </div>
+                        </div>
+
+                        <div class="flex items-center space-x-1 sm:space-x-2 shrink-0">
+                          <button 
+                            @click.stop="addToQueue(track)"
+                            class="text-slate-400 hover:text-nile-blue p-2 transition text-sm"
+                            title="Adicionar à fila de execução"
+                          >
+                            <i class="fa-solid fa-list-ul"></i>
+                          </button>
+
+                          <button 
+                            @click.stop="toggleLikeTrack(track)"
+                            class="text-slate-400 hover:text-nile-yellow p-2 transition text-sm"
+                            :title="isTrackLiked(track.id) ? 'Descurtir' : 'Salvar como favorita'"
+                          >
+                            <i :class="isTrackLiked(track.id) ? 'fa-solid fa-heart text-nile-yellow' : 'fa-regular fa-heart'"></i>
+                          </button>
+
+                          <button 
+                            @click.stop="openAddToPlaylistModal(track)"
+                            class="text-slate-400 hover:text-nile-blue p-2 transition text-sm"
+                            title="Adicionar à Playlist"
+                          >
+                            <i class="fa-solid fa-plus"></i>
+                          </button>
                         </div>
                       </div>
-
-                      <div class="flex items-center space-x-1 sm:space-x-2 shrink-0">
-                        <button 
-                          @click.stop="addToQueue(track)"
-                          class="text-slate-400 hover:text-nile-blue p-2 transition text-sm"
-                          title="Adicionar à fila de execução"
-                        >
-                          <i class="fa-solid fa-list-ul"></i>
-                        </button>
-
-                        <button 
-                          @click.stop="toggleLikeTrack(track)"
-                          class="text-slate-400 hover:text-nile-yellow p-2 transition text-sm"
-                          :title="isTrackLiked(track.id) ? 'Descurtir' : 'Salvar como favorita'"
-                        >
-                          <i :class="isTrackLiked(track.id) ? 'fa-solid fa-heart text-nile-yellow' : 'fa-regular fa-heart'"></i>
-                        </button>
-
-                        <button 
-                          @click.stop="openAddToPlaylistModal(track)"
-                          class="text-slate-400 hover:text-nile-blue p-2 transition text-sm"
-                          title="Adicionar à Playlist"
-                        >
-                          <i class="fa-solid fa-plus"></i>
-                        </button>
-                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              </template>
             </template>
           </div>
 
@@ -573,10 +713,10 @@
                     </button>
 
                     <button 
-                      @click="navigate('search')" 
-                      class="bg-nile-card hover:bg-nile-hover text-slate-200 px-5 py-2.5 rounded-full font-bold text-xs border border-nile-border uppercase tracking-wider transition"
+                      @click="openArtistPage(albumData.artist)" 
+                      class="bg-nile-card hover:bg-nile-hover text-nile-blue px-5 py-2.5 rounded-full font-bold text-xs border border-nile-border uppercase tracking-wider transition"
                     >
-                      Voltar à Busca
+                      Ver Artista
                     </button>
                   </div>
                 </div>
@@ -618,7 +758,7 @@
             </div>
           </div>
 
-          <!-- TELA 4: PÁGINA DO ARTISTA -->
+          <!-- TELA 4: PÁGINA DO ARTISTA (SOMENTE ÁLBUNS; AS MÚSICAS APARECEM AO CLICAR NO ÁLBUM) -->
           <div v-if="currentView === 'artist' && artistData" class="space-y-6 sm:space-y-8 animate-fadeIn">
             <div class="relative rounded-2xl sm:rounded-3xl bg-gradient-to-r from-sky-950/80 via-nile-card to-amber-950/40 p-5 sm:p-8 border border-nile-border overflow-hidden">
               <div class="flex flex-col sm:flex-row items-center sm:items-end space-y-5 sm:space-y-0 sm:space-x-8 relative z-10">
@@ -660,70 +800,36 @@
               </div>
             </div>
 
-            <div class="space-y-5">
+            <!-- Grade de Álbuns do Artista -->
+            <div class="space-y-4">
               <div class="flex items-center justify-between">
-                <h3 class="text-xl sm:text-2xl font-black">Discografia por Álbuns</h3>
-                <span class="text-xs text-slate-400">{{ artistAlbums.length }} {{ artistAlbums.length === 1 ? 'álbum' : 'álbuns' }}</span>
+                <h3 class="text-xl sm:text-2xl font-black">Álbuns</h3>
+                <span class="text-xs text-slate-400">{{ artistAlbums.length }} {{ artistAlbums.length === 1 ? 'álbum' : 'álbuns' }} • Clique em um álbum para ver as músicas</span>
               </div>
 
-              <div 
-                v-for="album in artistAlbums" 
-                :key="'art-alb-' + album.name"
-                class="bg-nile-card rounded-2xl border border-nile-border overflow-hidden"
-              >
-                <!-- Cabeçalho do Álbum do Artista -->
-                <div class="p-4 sm:p-5 bg-nile-surface/70 border-b border-nile-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div class="flex items-center space-x-4 min-w-0 cursor-pointer group" @click="openAlbumPage(album)">
-                    <img :src="album.cover" :alt="album.name" class="w-16 h-16 sm:w-20 sm:h-20 rounded-xl object-cover shadow-lg border border-nile-border group-hover:border-nile-yellow transition shrink-0" />
-                    <div class="min-w-0">
-                      <span class="text-[10px] font-bold uppercase tracking-widest text-nile-blue block">
-                        {{ album.name.toLowerCase() === 'single' ? 'SINGLE' : 'ÁLBUM' }}
-                      </span>
-                      <h4 class="text-base sm:text-xl font-black text-white truncate group-hover:text-nile-yellow transition">{{ album.name }}</h4>
-                      <p class="text-xs text-slate-400 mt-0.5">{{ album.tracks.length }} {{ album.tracks.length === 1 ? 'faixa' : 'faixas' }}</p>
-                    </div>
+              <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+                <div 
+                  v-for="album in artistAlbums" 
+                  :key="'art-alb-' + album.name"
+                  @click="openAlbumPage(album)"
+                  class="group bg-nile-card hover:bg-nile-hover p-3 sm:p-3.5 rounded-2xl border border-nile-border transition cursor-pointer flex flex-col"
+                >
+                  <div class="relative aspect-square rounded-xl overflow-hidden mb-3 bg-nile-hover shadow-lg">
+                    <img :src="album.cover" :alt="album.name" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+                    <button 
+                      @click.stop="playAlbum(album.tracks)"
+                      class="absolute bottom-2 right-2 w-9 h-9 rounded-full bg-nile-yellow text-nile-darkBg flex items-center justify-center shadow-lg opacity-95 sm:opacity-0 sm:group-hover:opacity-100 transition active:scale-95"
+                      title="Tocar Álbum"
+                    >
+                      <i class="fa-solid fa-play translate-x-0.5 text-xs"></i>
+                    </button>
                   </div>
 
-                  <button 
-                    @click="playAlbum(album.tracks)"
-                    class="self-start sm:self-center bg-nile-yellow hover:bg-nile-yellowHover text-nile-darkBg px-4 py-2 rounded-full font-bold text-xs uppercase tracking-wider flex items-center space-x-2 shadow-md transition active:scale-95 shrink-0"
-                  >
-                    <i class="fa-solid fa-play text-[11px]"></i>
-                    <span>Tocar Álbum</span>
-                  </button>
-                </div>
-
-                <!-- Lista de Faixas deste Álbum -->
-                <div class="divide-y divide-nile-border/40">
-                  <div 
-                    v-for="(track, idx) in sortTracksById(album.tracks)" 
-                    :key="'art-tr-' + track.id"
-                    @click="playTrack(track, album.tracks)"
-                    class="flex items-center justify-between p-3 sm:p-3.5 hover:bg-nile-hover transition group cursor-pointer gap-2"
-                  >
-                    <div class="flex items-center space-x-3 sm:space-x-4 min-w-0 flex-1">
-                      <span class="w-5 text-center text-xs text-slate-500 font-bold group-hover:text-white shrink-0">
-                        <i v-if="currentTrack && currentTrack.id === track.id && isPlaying" class="fa-solid fa-volume-high text-nile-yellow"></i>
-                        <span v-else>{{ idx + 1 }}</span>
-                      </span>
-                      <div class="min-w-0 flex-1">
-                        <p class="font-bold text-xs sm:text-sm text-white truncate group-hover:text-nile-yellow transition" :class="currentTrack && currentTrack.id === track.id ? 'text-nile-yellow' : ''">{{ track.title }}</p>
-                        <p class="text-[11px] sm:text-xs text-slate-400 truncate">{{ track.artist }}</p>
-                      </div>
-                    </div>
-
-                    <div class="flex items-center space-x-1 sm:space-x-2 shrink-0">
-                      <button @click.stop="addToQueue(track)" class="text-slate-400 hover:text-nile-blue p-2 text-sm" title="Adicionar à fila de execução">
-                        <i class="fa-solid fa-list-ul"></i>
-                      </button>
-                      <button @click.stop="toggleLikeTrack(track)" class="text-slate-400 hover:text-nile-yellow p-2 text-sm" title="Salvar como favorita">
-                        <i :class="isTrackLiked(track.id) ? 'fa-solid fa-heart text-nile-yellow' : 'fa-regular fa-heart'"></i>
-                      </button>
-                      <button @click.stop="openAddToPlaylistModal(track)" class="text-slate-400 hover:text-nile-blue p-2 text-sm" title="Adicionar à Playlist">
-                        <i class="fa-solid fa-plus"></i>
-                      </button>
-                    </div>
-                  </div>
+                  <span class="text-[10px] font-bold uppercase tracking-widest text-nile-blue block">
+                    {{ album.name.toLowerCase() === 'single' ? 'SINGLE' : 'ÁLBUM' }}
+                  </span>
+                  <h4 class="font-bold text-xs sm:text-sm text-white truncate group-hover:text-nile-yellow transition mt-0.5">{{ album.name }}</h4>
+                  <p class="text-[11px] text-slate-400 mt-1">{{ album.tracks.length }} {{ album.tracks.length === 1 ? 'faixa' : 'faixas' }}</p>
                 </div>
               </div>
             </div>
