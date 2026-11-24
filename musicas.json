@@ -288,5 +288,175 @@
 "genre": "MPB",
 "cover": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/chicobuarque.jpeg",
 "url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/Chico%20Buarque/Construcao/10%20-%20Acalanto.mp3"
+},
+{
+"id": "1",
+"title": "Pull Me Under",
+"artist": "Dream Theater",
+"artistImage": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/DreamTheater-band.webp",
+"album": "Images & Words",
+"genre": "Progressive Metal",
+"cover": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/Imagesandwordsfront.jpg",
+"url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/Dream%20Theater/Images%20&%20Words/01%20-%20Pull%20Me%20Under.mp3"
+},
+{
+"id": "2",
+"title": "Another Day",
+"artist": "Dream Theater",
+"artistImage": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/DreamTheater-band.webp",
+"album": "Images & Words",
+"genre": "Progressive Metal",
+"cover": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/Imagesandwordsfront.jpg",
+"url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/Dream%20Theater/Images%20&%20Words/02%20-%20Another%20Day.mp3"
+},
+{
+"id": "3",
+"title": "Take The Time",
+"artist": "Dream Theater",
+"artistImage": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/DreamTheater-band.webp",
+"album": "Images & Words",
+"genre": "Progressive Metal",
+"cover": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/Imagesandwordsfront.jpg",
+"url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/Dream%20Theater/Images%20&%20Words/03%20-%20Take%20The%20Time.mp3"
+},
+{
+"id": "4",
+"title": "Surrounded",
+"artist": "Dream Theater",
+"artistImage": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/DreamTheater-band.webp",
+"album": "Images & Words",
+"genre": "Progressive Metal",
+"cover": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/Imagesandwordsfront.jpg",
+"url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/Dream%20Theater/Images%20&%20Words/04%20-%20Surrounded.mp3"
+},
+{
+"id": "5",
+"title": "Metropolis - Part I: "The Miracle and the Sleeper"",
+"artist": "Dream Theater",
+"artistImage": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/DreamTheater-band.webp",
+"album": "Images & Words",
+"genre": "Progressive Metal",
+"cover": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/Imagesandwordsfront.jpg",
+"url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/Dream%20Theater/Images%20&%20Words/05%20-%20Metropolis%20-%20Part%20I%20The%20Miracle%20And%20The%20Sleeper.mp3"
+},
+{
+"id": "6",
+"title": "Under A Glass Moon",
+"artist": "Dream Theater",
+"artistImage": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/DreamTheater-band.webp",
+"album": "Images & Words",
+"genre": "Progressive Metal",
+"cover": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/Imagesandwordsfront.jpg",
+"url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/Dream%20Theater/Images%20&%20Words/06%20-%20Under%20A%20Glass%20Moon.mp3"
+},
+{
+"id": "7",
+"title": "Wait For Sleep",
+"artist": "Dream Theater",
+"artistImage": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/DreamTheater-band.webp",
+"album": "Images & Words",
+"genre": "Progressive Metal",
+"cover": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/Imagesandwordsfront.jpg",
+"url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/Dream%20Theater/Images%20&%20Words/07%20-%20Wait%20For%20Sleep.mp3"
+},
+{
+"id": "8",
+"title": "Learning To Live",
+"artist": "Dream Theater",
+"artistImage": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/DreamTheater-band.webp",
+"album": "Images & Words",
+"genre": "Progressive Metal",
+"cover": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/Imagesandwordsfront.jpg",
+"url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/Dream%20Theater/Images%20&%20Words/08%20-%20Learning%20To%20Live.mp3"
+},
+{
+"id": "1",
+"title": "On The Backs Of Angels",
+"artist": "Dream Theater",
+"artistImage": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/DreamTheater-band.webp",
+"album": "A Dramatic Turn Of Events",
+"genre": "Progressive Metal",
+"cover": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/dramticturnsfront.jpg",
+"url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/Dream%20Theater/A%20Dramatic%20Turn%20Of%20Events/01%20-%20On%20The%20Backs%20Of%20Angels.mp3"
+},
+{
+"id": "2",
+"title": "Build Me Up, Break Me Down",
+"artist": "Dream Theater",
+"artistImage": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/DreamTheater-band.webp",
+"album": "A Dramatic Turn Of Events",
+"genre": "Progressive Metal",
+"cover": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/dramticturnsfront.jpg",
+"url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/Dream%20Theater/A%20Dramatic%20Turn%20Of%20Events/02%20-%20Build%20Me%20Up%2C%20Break%20Me%20Down.mp3"
+},
+{
+"id": "3",
+"title": "Lost Not Forgotten",
+"artist": "Dream Theater",
+"artistImage": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/DreamTheater-band.webp",
+"album": "A Dramatic Turn Of Events",
+"genre": "Progressive Metal",
+"cover": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/dramticturnsfront.jpg",
+"url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/Dream%20Theater/A%20Dramatic%20Turn%20Of%20Events/03%20-%20Lost%20Not%20Forgotten.mp3"
+},
+{
+"id": "4",
+"title": "This Is The Life",
+"artist": "Dream Theater",
+"artistImage": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/DreamTheater-band.webp",
+"album": "A Dramatic Turn Of Events",
+"genre": "Progressive Metal",
+"cover": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/dramticturnsfront.jpg",
+"url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/Dream%20Theater/A%20Dramatic%20Turn%20Of%20Events/04%20-%20This%20Is%20The%20Life.mp3"
+},
+{
+"id": "5",
+"title": "Bridges In The Sky",
+"artist": "Dream Theater",
+"artistImage": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/DreamTheater-band.webp",
+"album": "A Dramatic Turn Of Events",
+"genre": "Progressive Metal",
+"cover": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/dramticturnsfront.jpg",
+"url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/Dream%20Theater/A%20Dramatic%20Turn%20Of%20Events/05%20-%20Bridges%20In%20The%20Sky.mp3"
+},
+{
+"id": "6",
+"title": "Outcry",
+"artist": "Dream Theater",
+"artistImage": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/DreamTheater-band.webp",
+"album": "A Dramatic Turn Of Events",
+"genre": "Progressive Metal",
+"cover": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/dramticturnsfront.jpg",
+"url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/Dream%20Theater/A%20Dramatic%20Turn%20Of%20Events/06%20-%20Outcry.mp3"
+},
+{
+"id": "7",
+"title": "Far From Heaven",
+"artist": "Dream Theater",
+"artistImage": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/DreamTheater-band.webp",
+"album": "A Dramatic Turn Of Events",
+"genre": "Progressive Metal",
+"cover": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/dramticturnsfront.jpg",
+"url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/Dream%20Theater/A%20Dramatic%20Turn%20Of%20Events/07%20-%20Far%20From%20Heaven.mp3"
+},
+{
+"id": "8",
+"title": "Breaking All Illusions",
+"artist": "Dream Theater",
+"artistImage": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/DreamTheater-band.webp",
+"album": "A Dramatic Turn Of Events",
+"genre": "Progressive Metal",
+"cover": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/dramticturnsfront.jpg",
+"url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/Dream%20Theater/A%20Dramatic%20Turn%20Of%20Events/08%20-%20Breaking%20All%20Illusions.mp3"
+},
+{
+"id": "9",
+"title": "Beneath The Surface",
+"artist": "Dream Theater",
+"artistImage": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/DreamTheater-band.webp",
+"album": "A Dramatic Turn Of Events",
+"genre": "Progressive Metal",
+"cover": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/dramticturnsfront.jpg",
+"url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/Dream%20Theater/A%20Dramatic%20Turn%20Of%20Events/09%20-%20Beneath%20The%20Surface.mp3"
 }
 ]
