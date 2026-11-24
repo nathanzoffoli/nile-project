@@ -188,5 +188,105 @@
     "genre": "MPB/Samba",
     "cover": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/cartola.jpg",
     "url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/Cartola/Cartola%20(1976)/12_Cordas.De.Aco.mp3"
-  }
+  },
+{
+"id": "1",
+"title": "Deus Lhe Pague",
+"artist": "Chico Buarque",
+"artistImage": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/chicobuarque.jpeg",
+"album": "Construção",
+"genre": "MPB",
+"cover": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/chicobuarque.jpeg",
+"url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/Chico%20Buarque/Construcao/01%20-%20Deus%20lhe%20pague.mp3"
+},
+{
+"id": "2",
+"title": "Cotidiano",
+"artist": "Chico Buarque",
+"artistImage": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/chicobuarque.jpeg",
+"album": "Construção",
+"genre": "MPB",
+"cover": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/chicobuarque.jpeg",
+"url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/Chico%20Buarque/Construcao/02%20-%20Cotidiano.mp3"
+},
+{
+"id": "3",
+"title": "Desalento",
+"artist": "Chico Buarque",
+"artistImage": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/chicobuarque.jpeg",
+"album": "Construção",
+"genre": "MPB",
+"cover": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/chicobuarque.jpeg",
+"url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/Chico%20Buarque/Construcao/03%20-%20Desalento.mp3"
+},
+{
+"id": "4",
+"title": "Construção",
+"artist": "Chico Buarque",
+"artistImage": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/chicobuarque.jpeg",
+"album": "Construção",
+"genre": "MPB",
+"cover": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/chicobuarque.jpeg",
+"url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/Chico%20Buarque/Construcao/04%20-%20Construcao.mp3"
+},
+{
+"id": "5",
+"title": "Cordão",
+"artist": "Chico Buarque",
+"artistImage": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/chicobuarque.jpeg",
+"album": "Construção",
+"genre": "MPB",
+"cover": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/chicobuarque.jpeg",
+"url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/Chico%20Buarque/Construcao/05%20-%20Cordao.mp3"
+},
+{
+"id": "6",
+"title": "Olha Maria",
+"artist": "Chico Buarque",
+"artistImage": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/chicobuarque.jpeg",
+"album": "Construção",
+"genre": "MPB",
+"cover": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/chicobuarque.jpeg",
+"url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/Chico%20Buarque/Construcao/06%20-%20Olha%20Maria.mp3"
+},
+{
+"id": "7",
+"title": "Samba de Orly",
+"artist": "Chico Buarque",
+"artistImage": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/chicobuarque.jpeg",
+"album": "Construção",
+"genre": "MPB",
+"cover": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/chicobuarque.jpeg",
+"url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/Chico%20Buarque/Construcao/07%20-%20Samba%20de%20Orly.mp3"
+},
+{
+"id": "8",
+"title": "Valsinha",
+"artist": "Chico Buarque",
+"artistImage": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/chicobuarque.jpeg",
+"album": "Construção",
+"genre": "MPB",
+"cover": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/chicobuarque.jpeg",
+"url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/Chico%20Buarque/Construcao/08%20-%20Valsinha.mp3"
+},
+{
+"id": "9",
+"title": "Minha História",
+"artist": "Chico Buarque",
+"artistImage": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/chicobuarque.jpeg",
+"album": "Construção",
+"genre": "MPB",
+"cover": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/chicobuarque.jpeg",
+"url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/Chico%20Buarque/Construcao/09%20-%20Minha%20Historia.mp3"
+},
+{
+"id": "10",
+"title": "Acalanto",
+"artist": "Chico Buarque",
+"artistImage": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/chicobuarque.jpeg",
+"album": "Construção",
+"genre": "MPB",
+"cover": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/chicobuarque.jpeg",
+"url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/Chico%20Buarque/Construcao/10%20-%20Acalanto.mp3"
+}
 ]
