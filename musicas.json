@@ -87,7 +87,7 @@
     "album": "Cartola (1976)",
     "genre": "MPB/Samba",
     "cover": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/cartola.jpg",
-    "url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/01_O.Mundo.E.Um.Moinho.mp3"
+    "url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/Cartola/Cartola%20(1976)/01_O.Mundo.E.Um.Moinho.mp3"
   },
   {
     "id": "2",
@@ -97,7 +97,7 @@
     "album": "Cartola (1976)",
     "genre": "MPB/Samba",
     "cover": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/cartola.jpg",
-    "url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/02_Minha.mp3"
+    "url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/Cartola/Cartola%20(1976)/02_Minha.mp3"
   },{
     "id": "3",
     "title": "Sala de Recepção",
@@ -106,7 +106,7 @@
     "album": "Cartola (1976)",
     "genre": "MPB/Samba",
     "cover": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/cartola.jpg",
-    "url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/03_Sala.De.Recepcao.mp3"
+    "url": https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/Cartola/Cartola%20(1976)/03_Sala.De.Recepcao.mp3"
   },{
     "id": "4",
     "title": "Não Posso Viver Sem Ela",
@@ -115,7 +115,7 @@
     "album": "Cartola (1976)",
     "genre": "MPB/Samba",
     "cover": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/cartola.jpg",
-    "url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/04_Nao.Posso.Viver.Sem.Ela.mp3"
+    "url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/Cartola/Cartola%20(1976)/04_Nao.Posso.Viver.Sem.Ela.mp3"
   },{
     "id": "5",
     "title": "Preciso Me Encontrar",
@@ -124,7 +124,7 @@
     "album": "Cartola (1976)",
     "genre": "MPB/Samba",
     "cover": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/cartola.jpg",
-    "url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/05_Preciso.Me.Encontrar.mp3"
+    "url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/Cartola/Cartola%20(1976)/05_Preciso.Me.Encontrar.mp3"
   },{
     "id": "6",
     "title": "Peito Vazio",
@@ -133,7 +133,7 @@
     "album": "Cartola (1976)",
     "genre": "MPB/Samba",
     "cover": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/cartola.jpg",
-    "url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/06_Peito.Vazio.mp3"
+    "url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/Cartola/Cartola%20(1976)/06_Peito.Vazio.mp3"
   },{
     "id": "7",
     "title": "Aconteceu",
@@ -142,7 +142,7 @@
     "album": "Cartola (1976)",
     "genre": "MPB/Samba",
     "cover": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/cartola.jpg",
-    "url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/07_Aconteceu.mp3"
+    "url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/Cartola/Cartola%20(1976)/07_Aconteceu.mp3"
   },{
     "id": "8",
     "title": "As Rosas Não Falam",
@@ -151,7 +151,7 @@
     "album": "Cartola (1976)",
     "genre": "MPB/Samba",
     "cover": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/cartola.jpg",
-    "url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/08_As.Rosas.Nao.Falam.mp3"
+    "url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/Cartola/Cartola%20(1976)/08_As.Rosas.Nao.Falam.mp3"
   },{
     "id": "9",
     "title": "Sei Chorar",
@@ -160,7 +160,7 @@
     "album": "Cartola (1976)",
     "genre": "MPB/Samba",
     "cover": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/cartola.jpg",
-    "url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/09_Sei.Chorar.mp3"
+    "url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/Cartola/Cartola%20(1976)/09_Sei.Chorar.mp3"
   },{
     "id": "10",
     "title": "Ensaboa Mulata",
@@ -169,7 +169,7 @@
     "album": "Cartola (1976)",
     "genre": "MPB/Samba",
     "cover": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/cartola.jpg",
-    "url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/10_Ensaboa.Mulata.mp3"
+    "url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/Cartola/Cartola%20(1976)/10_Ensaboa.Mulata.mp3"
   },{
     "id": "11",
     "title": "Senhora Tentaçãoo",
@@ -178,7 +178,7 @@
     "album": "Cartola (1976)",
     "genre": "MPB/Samba",
     "cover": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/cartola.jpg",
-    "url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/11_Senhora.Tentacao.mp3"
+    "url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/Cartola/Cartola%20(1976)/11_Senhora.Tentacao.mp3"
   },{
     "id": "12",
     "title": "Cordas de Aço",
@@ -187,6 +187,6 @@
     "album": "Cartola (1976)",
     "genre": "MPB/Samba",
     "cover": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Capas/cartola.jpg",
-    "url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/12_Cordas.De.Aco.mp3"
+    "url": "https://yqyytdvhcxfjkugjerme.supabase.co/storage/v1/object/public/musicas/Audio/Cartola/Cartola%20(1976)/12_Cordas.De.Aco.mp3"
   }
 ]
