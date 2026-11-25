@@ -1,6 +1,4 @@
-// =========================================================================
-// CONFIGURAÇÃO DO SERVIDOR (COLE SUAS CHAVES DO SUPABASE ABAIXO)
-// =========================================================================
+
 const RAW_SUPABASE_URL = 'https://yqyytdvhcxfjkugjerme.supabase.co/rest/v1/';
 const RAW_SUPABASE_ANON_KEY = 'sb_publishable_FZSVXEBEqr27PzRGq8ElSg_S4pfjPxD';
 const CATALOG_JSON_URL = './musicas.json';
